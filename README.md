@@ -330,8 +330,9 @@ vercel deploy --prod
 ```
 
 - **Progetto Vercel:** `taskwave`
-- **URL produzione:** [taskwave.vercel.app](https://taskwave-rust.vercel.app)
+- **URL produzione:** [taskwave-rust.vercel.app](https://taskwave-rust.vercel.app)
 - Imposta `NEXT_PUBLIC_APP_URL=https://taskwave-rust.vercel.app` su Vercel (progetto **taskwave**)
+- **Email senza dominio proprio:** vedi [docs/EMAIL_AND_DOMAINS.md](docs/EMAIL_AND_DOMAINS.md) (English) — inviti via **Copia link**; dominio custom solo se vuoi email automatiche
 
 ---
 
