@@ -63,6 +63,10 @@ export async function POST(
       p_email: normalizedEmail,
     });
 
+    // #region agent log
+    fetch('http://127.0.0.1:7830/ingest/287043ce-c603-431d-889d-2f262003b458',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7e0774'},body:JSON.stringify({sessionId:'7e0774',location:'invite/route.ts:rpc',message:'invite_member_by_email result',data:{workspaceId,hasError:!!rpcError,errorCode:rpcError?.code,errorMessage:rpcError?.message,hasToken:!!(inviteResult as {token?:string}|null)?.token},timestamp:Date.now(),hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+
     if (rpcError) {
       return NextResponse.json({ error: rpcError.message }, { status: 400 });
     }
