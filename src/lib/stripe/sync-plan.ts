@@ -2,8 +2,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { PlanTier, Database } from '@/lib/database.types';
 import { createServiceClient } from '@/lib/supabase/server';
 
-const WEBHOOK_SECRET = process.env.WEBHOOK_INTERNAL_SECRET || 'taskflow_webhook_2026';
-
 type SyncResult = { id: string; plan: PlanTier };
 
 export async function syncProfilePlan(
@@ -61,5 +59,6 @@ export function resolvePlanFromMetadata(
 }
 
 export function getWebhookSecret() {
-  return WEBHOOK_SECRET;
+  // Must match sync_profile_plan() in Postgres (007_sync_profile_plan_auth.sql)
+  return 'taskflow_webhook_2026';
 }
