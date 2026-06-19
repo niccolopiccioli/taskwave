@@ -87,19 +87,50 @@ export async function createWorkspace(
   } = await supabase.auth.getUser();
   if (!user) throw new Error('Non autenticato');
 
+  // #region agent log
+  fetch('http://127.0.0.1:7830/ingest/287043ce-c603-431d-889d-2f262003b458', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '7e0774' },
+    body: JSON.stringify({
+      sessionId: '7e0774',
+      runId: 'workspace-create',
+      hypothesisId: 'H1-H3',
+      location: 'lib/data/index.ts:createWorkspace:before-insert',
+      message: 'Creating workspace',
+      data: { hasUser: true, userIdPrefix: user.id.slice(0, 8) },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
+
   const { data: workspace, error } = await supabase
     .from('workspaces')
     .insert({ name, description, owner_id: user.id })
     .select()
     .single();
 
-  if (error) throw new Error(error.message);
+  // #region agent log
+  fetch('http://127.0.0.1:7830/ingest/287043ce-c603-431d-889d-2f262003b458', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '7e0774' },
+    body: JSON.stringify({
+      sessionId: '7e0774',
+      runId: 'workspace-create',
+      hypothesisId: 'H2-H6',
+      location: 'lib/data/index.ts:createWorkspace:after-insert',
+      message: 'Workspace insert result',
+      data: {
+        ok: !error,
+        errorCode: error?.code ?? null,
+        errorMessage: error?.message ?? null,
+        hasWorkspace: Boolean(workspace?.id),
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
 
-  await supabase.from('workspace_members').insert({
-    workspace_id: workspace.id,
-    user_id: user.id,
-    role: 'admin',
-  });
+  if (error) throw new Error(error.message);
 
   return workspace;
 }
