@@ -5,7 +5,10 @@ import { stripe } from '@/lib/stripe';
 import {
   syncProfilePlan,
   resolvePlanFromMetadata,
+  getWebhookSecret,
 } from '@/lib/stripe/sync-plan';
+import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/supabase/env';
 import type { PlanTier } from '@/lib/database.types';
 
 function getSubscriptionPriceId(subscription: Stripe.Subscription): string | null {
@@ -38,6 +41,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
+  const webhookSupabase = createClient(getSupabaseUrl(), getSupabaseAnonKey());
+  const webhookSecret = getWebhookSecret();
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -49,18 +55,21 @@ export async function POST(request: Request) {
         );
 
         if (userId && plan) {
-          await syncProfilePlan({
-            userId,
-            plan,
-            stripeCustomerId:
-              typeof session.customer === 'string'
-                ? session.customer
-                : session.customer?.id,
-            stripeSubscriptionId:
-              typeof session.subscription === 'string'
-                ? session.subscription
-                : session.subscription?.id ?? null,
-          });
+          await syncProfilePlan(
+            {
+              userId,
+              plan,
+              stripeCustomerId:
+                typeof session.customer === 'string'
+                  ? session.customer
+                  : session.customer?.id,
+              stripeSubscriptionId:
+                typeof session.subscription === 'string'
+                  ? session.subscription
+                  : session.subscription?.id ?? null,
+            },
+            { supabase: webhookSupabase, webhookSecret }
+          );
           console.info(`Plan synced via webhook: user=${userId} plan=${plan}`);
         } else {
           console.warn('checkout.session.completed missing userId or plan', {
@@ -85,12 +94,15 @@ export async function POST(request: Request) {
             : 'free';
 
         if (userId) {
-          await syncProfilePlan({
-            userId,
-            plan,
-            stripeSubscriptionId: isActive ? subscription.id : null,
-            stripePriceId: isActive ? priceId : null,
-          });
+          await syncProfilePlan(
+            {
+              userId,
+              plan,
+              stripeSubscriptionId: isActive ? subscription.id : null,
+              stripePriceId: isActive ? priceId : null,
+            },
+            { supabase: webhookSupabase, webhookSecret }
+          );
           console.info(`Subscription synced: user=${userId} plan=${plan} status=${subscription.status}`);
         }
         break;

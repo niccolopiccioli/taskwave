@@ -48,14 +48,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Piano non riconosciuto dalla sessione' }, { status: 400 });
     }
 
-    const updated = await syncProfilePlan({
-      userId: user.id,
-      plan,
-      stripeCustomerId:
-        typeof session.customer === 'string' ? session.customer : session.customer?.id,
-      stripeSubscriptionId: subscriptionId,
-      stripePriceId: priceId,
-    });
+    const updated = await syncProfilePlan(
+      {
+        userId: user.id,
+        plan,
+        stripeCustomerId:
+          typeof session.customer === 'string' ? session.customer : session.customer?.id,
+        stripeSubscriptionId: subscriptionId,
+        stripePriceId: priceId,
+      },
+      { supabase }
+    );
 
     return NextResponse.json({
       success: true,
@@ -63,9 +66,12 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Sync session error:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Errore sincronizzazione piano' },
-      { status: 500 }
-    );
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'object' && error !== null && 'message' in error
+          ? String((error as { message: unknown }).message)
+          : 'Errore sincronizzazione piano';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

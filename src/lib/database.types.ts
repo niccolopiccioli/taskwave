@@ -248,9 +248,10 @@ export interface Database {
           p_plan: PlanTier;
           p_stripe_customer_id?: string | null;
           p_stripe_subscription_id?: string | null;
+          p_stripe_price_id?: string | null;
           p_webhook_secret?: string | null;
         };
-        Returns: undefined;
+        Returns: Json;
       };
       invite_member_by_email: {
         Args: {
