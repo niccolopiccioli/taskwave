@@ -8,6 +8,7 @@ export type Json =
 
 export type PlanTier = 'free' | 'pro' | 'business';
 export type MemberRole = 'admin' | 'member';
+export type InvitationStatus = 'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired';
 export type TaskPriority = 'low' | 'medium' | 'high';
 export type NotificationType = 'assigned' | 'moved' | 'commented';
 
@@ -78,6 +79,36 @@ export interface Database {
         },
         { workspace_id: string; user_id: string; role?: MemberRole },
         { role?: MemberRole }
+      >;
+      workspace_invitations: TableDef<
+        {
+          id: string;
+          workspace_id: string;
+          email: string;
+          user_id: string | null;
+          invited_by: string;
+          token: string;
+          status: InvitationStatus;
+          role: MemberRole;
+          expires_at: string;
+          created_at: string;
+          responded_at: string | null;
+        },
+        {
+          workspace_id: string;
+          email: string;
+          user_id?: string | null;
+          invited_by: string;
+          token?: string;
+          status?: InvitationStatus;
+          role?: MemberRole;
+          expires_at?: string;
+        },
+        {
+          status?: InvitationStatus;
+          user_id?: string | null;
+          responded_at?: string | null;
+        }
       >;
       boards: TableDef<
         {
@@ -258,6 +289,22 @@ export interface Database {
           p_workspace_id: string;
           p_email: string;
         };
+        Returns: Json;
+      };
+      get_invitation_by_token: {
+        Args: { p_token: string };
+        Returns: Json;
+      };
+      accept_workspace_invitation: {
+        Args: { p_token: string };
+        Returns: Json;
+      };
+      decline_workspace_invitation: {
+        Args: { p_token: string };
+        Returns: undefined;
+      };
+      cancel_workspace_invitation: {
+        Args: { p_invitation_id: string };
         Returns: undefined;
       };
       remove_workspace_member: {

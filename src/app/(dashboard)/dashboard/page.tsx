@@ -30,6 +30,7 @@ import { WorkspaceTeamPanel } from '@/components/workspace/workspace-team-panel'
 import { WorkspaceAuditPanel } from '@/components/workspace/workspace-audit-panel';
 import { PlanGate } from '@/components/plan/plan-gate';
 import { UpgradeCtaBanner } from '@/components/pricing/pricing-cards';
+import { PendingInvitesBanner } from '@/components/workspace/pending-invites-banner';
 
 interface Board {
   id: string;
@@ -222,7 +223,7 @@ function DashboardContent() {
       setInviteEmail('');
       await loadData();
       toast({
-        title: result.memberAdded ? 'Membro aggiunto' : 'Invito inviato',
+        title: 'Invito inviato',
         description: result.message,
       });
     } catch (error) {
@@ -322,6 +323,7 @@ function DashboardContent() {
           </div>
         </div>
 
+        <PendingInvitesBanner onAccepted={loadData} />
         {profile && <div className="mb-6"><UpgradeCtaBanner plan={profile.plan} /></div>}
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">

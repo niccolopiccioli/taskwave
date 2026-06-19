@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,17 @@ import { createClient } from '@/lib/supabase/client';
 import { Brand } from '@/components/layout/brand';
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-teal-400" /></div>}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
@@ -42,7 +52,7 @@ export default function LoginPage() {
         description: 'Reindirizzamento alla dashboard...',
       });
 
-      router.push('/dashboard');
+      router.push(redirectTo);
       router.refresh();
     } catch (error) {
       toast({

@@ -134,7 +134,30 @@ export async function inviteMemberByEmail(
     throw new Error(data.error || 'Impossibile inviare l\'invito');
   }
 
-  return data as { memberAdded: boolean; emailSent: boolean; message: string };
+  return data as { emailSent: boolean; message: string };
+}
+
+export async function listWorkspaceInvitations(workspaceId: string) {
+  const response = await fetch(`/api/workspaces/${workspaceId}/invitations`);
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Impossibile caricare gli inviti');
+  return data.invitations as Array<{
+    id: string;
+    email: string;
+    status: string;
+    created_at: string;
+    expires_at: string;
+  }>;
+}
+
+export async function cancelWorkspaceInvitation(workspaceId: string, invitationId: string) {
+  const response = await fetch(
+    `/api/workspaces/${workspaceId}/invitations/${invitationId}`,
+    { method: 'DELETE' }
+  );
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Impossibile annullare l\'invito');
+  return data;
 }
 
 export async function removeWorkspaceMember(workspaceId: string, userId: string) {

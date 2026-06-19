@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -16,14 +16,25 @@ import { createClient } from '@/lib/supabase/client';
 import { Brand } from '@/components/layout/brand';
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-teal-400" /></div>}>
+      <RegisterContent />
+    </Suspense>
+  );
+}
+
+function RegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get('invite');
+  const prefilledEmail = searchParams.get('email') || '';
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
 
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: { name: '', email: prefilledEmail, password: '', confirmPassword: '' },
   });
 
   const onSubmit = async (data: RegisterInput) => {
@@ -46,7 +57,7 @@ export default function RegisterPage() {
           title: 'Account creato!',
           description: 'Benvenuto in TaskFlow Pro.',
         });
-        router.push('/dashboard');
+        router.push(inviteToken ? `/invite/${inviteToken}` : '/dashboard');
         router.refresh();
       } else {
         toast({
@@ -88,7 +99,9 @@ export default function RegisterPage() {
             <Brand href="/" size="lg" />
           </div>
           <CardTitle className="text-2xl font-display">Crea il tuo account</CardTitle>
-          <CardDescription>Inizia a gestire i tuoi progetti</CardDescription>
+          <CardDescription>
+            {inviteToken ? 'Crea un account per accettare l\'invito al team' : 'Inizia a gestire i tuoi progetti'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>

@@ -58,50 +58,36 @@ export async function POST(
 
     const inviterName = inviterProfile?.full_name || inviterProfile?.email || 'Un membro del team';
 
-    let memberAdded = false;
-    const { error: rpcError } = await supabase.rpc('invite_member_by_email', {
+    const { data: inviteResult, error: rpcError } = await supabase.rpc('invite_member_by_email', {
       p_workspace_id: workspaceId,
       p_email: normalizedEmail,
     });
 
-    if (!rpcError) {
-      memberAdded = true;
-    } else if (rpcError.message.includes('già membro')) {
-      return NextResponse.json(
-        { error: 'Utente già membro del workspace.' },
-        { status: 400 }
-      );
-    } else if (
-      !rpcError.message.includes('non trovato') &&
-      !rpcError.message.includes('registrarsi')
-    ) {
+    if (rpcError) {
       return NextResponse.json({ error: rpcError.message }, { status: 400 });
     }
 
+    const token = (inviteResult as { token?: string } | null)?.token;
+    if (!token) {
+      return NextResponse.json({ error: 'Impossibile creare l\'invito' }, { status: 500 });
+    }
+
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const actionUrl = memberAdded
-      ? `${appUrl}/dashboard`
-      : `${appUrl}/register?email=${encodeURIComponent(normalizedEmail)}`;
+    const actionUrl = `${appUrl}/invite/${token}`;
 
     await sendResendEmail({
       to: normalizedEmail,
-      subject: memberAdded
-        ? `Sei stato aggiunto a ${workspace.name} su TaskFlow Pro`
-        : `Invito al workspace ${workspace.name} su TaskFlow Pro`,
+      subject: `Invito al workspace ${workspace.name} su TaskFlow Pro`,
       html: workspaceInviteEmailHtml({
         workspaceName: workspace.name,
         inviterName,
-        memberAdded,
         actionUrl,
       }),
     });
 
     return NextResponse.json({
-      memberAdded,
       emailSent: true,
-      message: memberAdded
-        ? 'Membro aggiunto e email di notifica inviata.'
-        : 'Invito inviato via email. L\'utente dovrà registrarsi per unirsi.',
+      message: 'Invito inviato. L\'utente dovrà accettare per entrare nel team.',
     });
   } catch (error) {
     console.error('Invite error:', error);

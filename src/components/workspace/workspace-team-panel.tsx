@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Crown,
   Shield,
@@ -14,6 +14,7 @@ import {
   Settings,
   Trash2,
   Loader2,
+  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +60,8 @@ import {
   createApiKey,
   listApiKeys,
   revokeApiKey,
+  listWorkspaceInvitations,
+  cancelWorkspaceInvitation,
 } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
@@ -126,6 +129,9 @@ export function WorkspaceTeamPanel({
   const [apiKeys, setApiKeys] = useState<
     Array<{ id: string; name: string; key_prefix: string; created_at: string }>
   >([]);
+  const [pendingInvites, setPendingInvites] = useState<
+    Array<{ id: string; email: string; created_at: string; expires_at: string }>
+  >([]);
   const [error, setError] = useState<string | null>(null);
 
   const isAdmin = canManageMembers(workspace, currentUserId);
@@ -135,12 +141,29 @@ export function WorkspaceTeamPanel({
   const canLeave = canLeaveWorkspace(workspace, currentUserId);
   const myRole = getWorkspaceAccessRole(workspace, currentUserId);
 
+  useEffect(() => {
+    if (!isAdmin) return;
+    listWorkspaceInvitations(workspace.id)
+      .then(setPendingInvites)
+      .catch(() => setPendingInvites([]));
+  }, [workspace.id, isAdmin, workspace.members.length]);
+
+  const refreshPendingInvites = async () => {
+    if (!isAdmin) return;
+    try {
+      setPendingInvites(await listWorkspaceInvitations(workspace.id));
+    } catch {
+      setPendingInvites([]);
+    }
+  };
+
   const runAction = async (key: string, fn: () => Promise<void>) => {
     setActionLoading(key);
     setError(null);
     try {
       await fn();
       await onRefresh();
+      await refreshPendingInvites();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Operazione non riuscita');
     } finally {
@@ -209,6 +232,13 @@ export function WorkspaceTeamPanel({
     });
   };
 
+  const handleCancelInvite = async (invitationId: string) => {
+    await runAction(`cancel-${invitationId}`, async () => {
+      await cancelWorkspaceInvitation(workspace.id, invitationId);
+      setPendingInvites((prev) => prev.filter((i) => i.id !== invitationId));
+    });
+  };
+
   return (
     <>
       <Card className="border-border/60 bg-card/50">
@@ -258,6 +288,43 @@ export function WorkspaceTeamPanel({
           )}
 
           <div className="space-y-2">
+            {isAdmin && pendingInvites.length > 0 && (
+              <div className="mb-4 space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Inviti in attesa di conferma
+                </p>
+                {pendingInvites.map((invite) => (
+                  <div
+                    key={invite.id}
+                    className="flex items-center justify-between gap-3 p-3 rounded-xl border border-dashed border-amber-500/30 bg-amber-500/[0.03]"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
+                        <Clock className="w-4 h-4 text-amber-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{invite.email}</p>
+                        <p className="text-xs text-muted-foreground">In attesa di accettazione</p>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-muted-foreground hover:text-red-400"
+                      disabled={actionLoading === `cancel-${invite.id}`}
+                      onClick={() => handleCancelInvite(invite.id)}
+                    >
+                      {actionLoading === `cancel-${invite.id}` ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        'Annulla'
+                      )}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {workspace.members.map((member) => {
               const isMemberOwner = workspace.owner_id === member.user_id;
               const isSelf = member.user_id === currentUserId;
