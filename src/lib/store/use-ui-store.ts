@@ -54,7 +54,7 @@ export const useUIStore = create<UIState>()(
           notifications: { ...state.notifications, [key]: value },
         })),
     }),
-    { name: 'taskflow-ui-preferences' }
+    { name: 'taskwave-ui-preferences' }
   )
 );
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Create or update TaskFlow Pro auth templates on Resend.
+# Create or update TaskWave auth templates on Resend.
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 if [[ -f "$ROOT_DIR/.env.local" ]]; then set -a; source "$ROOT_DIR/.env.local"; set +a; fi
 : "${RESEND_API_KEY:?RESEND_API_KEY required}"
 
-FROM="TaskFlow Pro <onboarding@resend.dev>"
-APP_URL="${NEXT_PUBLIC_APP_URL:-https://taskflow-pro-niccolopicciolis-projects.vercel.app}"
+FROM="TaskWave <onboarding@resend.dev>"
+APP_URL="${NEXT_PUBLIC_APP_URL:-https://taskwave-rust.vercel.app}"
 AUTH="Authorization: Bearer ${RESEND_API_KEY}"
 
 wrap_html() {
@@ -18,12 +18,12 @@ wrap_html() {
 <body style="margin:0;padding:0;background-color:#09090b;font-family:Arial,Helvetica,sans-serif;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#09090b;padding:32px 16px;"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background-color:#18181b;border:1px solid #27272a;border-radius:12px;">
-<tr><td style="padding:28px 32px 12px;text-align:center;"><span style="font-size:20px;font-weight:700;color:#fafafa;">TaskFlow Pro</span></td></tr>
+<tr><td style="padding:28px 32px 12px;text-align:center;"><span style="font-size:20px;font-weight:700;color:#fafafa;">TaskWave</span></td></tr>
 <tr><td style="padding:8px 32px 24px;color:#e4e4e7;font-size:16px;line-height:26px;">
 <p style="margin:0 0 16px;color:#fafafa;font-size:22px;line-height:30px;">${title}</p>
 ${body}
 </td></tr>
-<tr><td style="padding:0 32px 28px;color:#71717a;font-size:12px;line-height:20px;text-align:center;">TaskFlow Pro · <a href="${APP_URL}" style="color:#2dd4bf;text-decoration:none;">${APP_URL}</a></td></tr>
+<tr><td style="padding:0 32px 28px;color:#71717a;font-size:12px;line-height:20px;text-align:center;">TaskWave · <a href="${APP_URL}" style="color:#2dd4bf;text-decoration:none;">${APP_URL}</a></td></tr>
 </table></td></tr></table></body></html>
 EOF
 }
@@ -63,40 +63,40 @@ BTN_MAGIC=$(btn "Accedi ora" "{{{MAGIC_LINK_URL}}}")
 BTN_CHANGE=$(btn "Conferma nuova email" "{{{CONFIRMATION_URL}}}")
 BTN_INVITE=$(btn "Accetta invito" "{{{INVITE_URL}}}")
 
-upsert_tpl "TaskFlow - Conferma email" "taskflow-confirm-email" \
-  "Conferma il tuo account TaskFlow Pro" \
+upsert_tpl "TaskWave - Conferma email" "taskwave-confirm-email" \
+  "Conferma il tuo account TaskWave" \
   "Conferma il tuo account: {{{CONFIRMATION_URL}}}" \
-  "$(wrap_html "Conferma la tua email" "<p style=\"margin:0 0 12px;\">Grazie per esserti registrato. Clicca per confermare il tuo indirizzo email.</p>${BTN_CONFIRM}<p style=\"margin:0;color:#a1a1aa;font-size:13px;\">Se non hai creato un account, ignora questa email.</p>")" \
+  "$(wrap_html "Conferma la tua email" "<p style=\"margin:0 0 12px;\">Grazie per esserti registrato su TaskWave. Clicca per confermare il tuo indirizzo email.</p>${BTN_CONFIRM}<p style=\"margin:0;color:#a1a1aa;font-size:13px;\">Se non hai creato un account, ignora questa email.</p>")" \
   '[{"key":"CONFIRMATION_URL","type":"string","fallbackValue":"'"$APP_URL"'"}]'
 
-upsert_tpl "TaskFlow - Reset password" "taskflow-reset-password" \
-  "Reimposta la password TaskFlow Pro" \
+upsert_tpl "TaskWave - Reset password" "taskwave-reset-password" \
+  "Reimposta la password TaskWave" \
   "Reimposta la password: {{{RESET_URL}}}" \
-  "$(wrap_html "Reimposta la password" "<p style=\"margin:0 0 12px;\">Abbiamo ricevuto una richiesta di reset password.</p>${BTN_RESET}<p style=\"margin:0;color:#a1a1aa;font-size:13px;\">Se non l'hai richiesto tu, ignora questa email.</p>")" \
+  "$(wrap_html "Reimposta la password" "<p style=\"margin:0 0 12px;\">Abbiamo ricevuto una richiesta di reset password per il tuo account TaskWave.</p>${BTN_RESET}<p style=\"margin:0;color:#a1a1aa;font-size:13px;\">Se non l'hai richiesto tu, ignora questa email.</p>")" \
   '[{"key":"RESET_URL","type":"string","fallbackValue":"'"$APP_URL"'"}]'
 
-upsert_tpl "TaskFlow - Codice OTP" "taskflow-otp" \
-  "Il tuo codice TaskFlow Pro" \
+upsert_tpl "TaskWave - Codice OTP" "taskwave-otp" \
+  "Il tuo codice TaskWave" \
   "Codice: {{{OTP_CODE}}}" \
-  "$(wrap_html "Codice di verifica" "<p style=\"margin:0 0 12px;\">Usa questo codice per completare l'accesso:</p><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td align=\"center\" bgcolor=\"#27272a\" style=\"background-color:#27272a;border-radius:10px;padding:18px;\"><span style=\"font-size:32px;font-weight:700;letter-spacing:8px;color:#2dd4bf;font-family:Courier New,monospace;\">{{{OTP_CODE}}}</span></td></tr></table><p style=\"margin:12px 0 0;color:#a1a1aa;font-size:13px;\">Non condividerlo con nessuno.</p>")" \
+  "$(wrap_html "Codice di verifica" "<p style=\"margin:0 0 12px;\">Usa questo codice per completare l'accesso a TaskWave:</p><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td align=\"center\" bgcolor=\"#27272a\" style=\"background-color:#27272a;border-radius:10px;padding:18px;\"><span style=\"font-size:32px;font-weight:700;letter-spacing:8px;color:#2dd4bf;font-family:Courier New,monospace;\">{{{OTP_CODE}}}</span></td></tr></table><p style=\"margin:12px 0 0;color:#a1a1aa;font-size:13px;\">Non condividerlo con nessuno.</p>")" \
   '[{"key":"OTP_CODE","type":"string","fallbackValue":"000000"}]'
 
-upsert_tpl "TaskFlow - Magic link" "taskflow-magic-link" \
-  "Accedi a TaskFlow Pro" \
+upsert_tpl "TaskWave - Magic link" "taskwave-magic-link" \
+  "Accedi a TaskWave" \
   "Accedi: {{{MAGIC_LINK_URL}}}" \
-  "$(wrap_html "Accedi al tuo account" "<p style=\"margin:0 0 12px;\">Clicca per accedere. Il link scade a breve.</p>${BTN_MAGIC}")" \
+  "$(wrap_html "Accedi al tuo account" "<p style=\"margin:0 0 12px;\">Clicca per accedere a TaskWave. Il link scade a breve.</p>${BTN_MAGIC}")" \
   '[{"key":"MAGIC_LINK_URL","type":"string","fallbackValue":"'"$APP_URL"'"}]'
 
-upsert_tpl "TaskFlow - Cambio email" "taskflow-email-change" \
-  "Conferma il nuovo indirizzo email" \
+upsert_tpl "TaskWave - Cambio email" "taskwave-email-change" \
+  "Conferma il nuovo indirizzo email TaskWave" \
   "Conferma {{{NEW_EMAIL}}}: {{{CONFIRMATION_URL}}}" \
-  "$(wrap_html "Conferma nuova email" "<p style=\"margin:0 0 12px;\">Conferma <strong style=\"color:#fafafa;\">{{{NEW_EMAIL}}}</strong> come nuovo indirizzo.</p>${BTN_CHANGE}")" \
+  "$(wrap_html "Conferma nuova email" "<p style=\"margin:0 0 12px;\">Conferma <strong style=\"color:#fafafa;\">{{{NEW_EMAIL}}}</strong> come nuovo indirizzo TaskWave.</p>${BTN_CHANGE}")" \
   '[{"key":"CONFIRMATION_URL","type":"string","fallbackValue":"'"$APP_URL"'"},{"key":"NEW_EMAIL","type":"string","fallbackValue":"email@esempio.it"}]'
 
-upsert_tpl "TaskFlow - Invito workspace" "taskflow-invite" \
-  "Invito su TaskFlow Pro" \
+upsert_tpl "TaskWave - Invito workspace" "taskwave-invite" \
+  "Invito su TaskWave" \
   "Invito workspace {{{WORKSPACE_NAME}}}: {{{INVITE_URL}}}" \
-  "$(wrap_html "Invito al workspace" "<p style=\"margin:0 0 12px;\">Sei stato invitato nel workspace <strong style=\"color:#fafafa;\">{{{WORKSPACE_NAME}}}</strong>.</p>${BTN_INVITE}")" \
+  "$(wrap_html "Invito al workspace" "<p style=\"margin:0 0 12px;\">Sei stato invitato nel workspace <strong style=\"color:#fafafa;\">{{{WORKSPACE_NAME}}}</strong> su TaskWave.</p>${BTN_INVITE}")" \
   '[{"key":"INVITE_URL","type":"string","fallbackValue":"'"$APP_URL"'"},{"key":"WORKSPACE_NAME","type":"string","fallbackValue":"Workspace"}]'
 
-echo "All templates published."
+echo "All TaskWave templates published."

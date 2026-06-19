@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import {
   syncProfilePlan,
   resolvePlanFromMetadata,
-  getWebhookSecret,
 } from '@/lib/stripe/sync-plan';
-import { createClient } from '@supabase/supabase-js';
-import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/supabase/env';
+import { createServiceClient } from '@/lib/supabase/server';
 import type { PlanTier } from '@/lib/database.types';
 
 function getSubscriptionPriceId(subscription: Stripe.Subscription): string | null {
@@ -31,7 +29,7 @@ export async function POST(request: Request) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       body,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
@@ -41,8 +39,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
-  const webhookSupabase = createClient(getSupabaseUrl(), getSupabaseAnonKey());
-  const webhookSecret = getWebhookSecret();
+  const webhookSupabase = await createServiceClient();
 
   try {
     switch (event.type) {
@@ -68,7 +65,7 @@ export async function POST(request: Request) {
                   ? session.subscription
                   : session.subscription?.id ?? null,
             },
-            { supabase: webhookSupabase, webhookSecret }
+            { supabase: webhookSupabase }
           );
           console.info(`Plan synced via webhook: user=${userId} plan=${plan}`);
         } else {
@@ -101,7 +98,7 @@ export async function POST(request: Request) {
               stripeSubscriptionId: isActive ? subscription.id : null,
               stripePriceId: isActive ? priceId : null,
             },
-            { supabase: webhookSupabase, webhookSecret }
+            { supabase: webhookSupabase }
           );
           console.info(`Subscription synced: user=${userId} plan=${plan} status=${subscription.status}`);
         }

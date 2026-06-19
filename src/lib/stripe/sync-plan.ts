@@ -14,7 +14,6 @@ export async function syncProfilePlan(
   },
   options?: {
     supabase?: SupabaseClient<Database>;
-    webhookSecret?: string | null;
   }
 ): Promise<SyncResult> {
   const supabase = options?.supabase ?? (await createServiceClient());
@@ -25,7 +24,7 @@ export async function syncProfilePlan(
     p_stripe_customer_id: params.stripeCustomerId ?? null,
     p_stripe_subscription_id: params.stripeSubscriptionId ?? null,
     p_stripe_price_id: params.stripePriceId ?? null,
-    p_webhook_secret: options?.webhookSecret ?? null,
+    p_webhook_secret: null,
   });
 
   if (error) {
@@ -56,9 +55,4 @@ export function resolvePlanFromMetadata(
     return metadataPlan;
   }
   return planFromPriceId(priceId);
-}
-
-export function getWebhookSecret() {
-  // Must match sync_profile_plan() in Postgres (007_sync_profile_plan_auth.sql)
-  return 'taskflow_webhook_2026';
 }

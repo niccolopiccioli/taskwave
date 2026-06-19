@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendResendEmail, workspaceInviteEmailHtml } from '@/lib/email/resend';
+import { checkRateLimit } from '@/lib/rate-limit-request';
 
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    if (!checkRateLimit(request, 'workspace-invite', 10, 60_000)) {
+      return NextResponse.json({ error: 'Troppe richieste. Riprova tra un minuto.' }, { status: 429 });
+    }
+
     const workspaceId = params.id;
     const { email } = (await request.json()) as { email?: string };
 
@@ -63,6 +68,13 @@ export async function POST(
       p_email: normalizedEmail,
     });
 
+    if (!rpcError) {
+      const { auditLog } = await import('@/lib/audit');
+      await auditLog(supabase, workspaceId, 'member.invited', 'invitation', undefined, {
+        email: normalizedEmail,
+      });
+    }
+
     if (rpcError) {
       return NextResponse.json({ error: rpcError.message }, { status: 400 });
     }
@@ -77,7 +89,7 @@ export async function POST(
 
     await sendResendEmail({
       to: normalizedEmail,
-      subject: `Invito al workspace ${workspace.name} su TaskFlow Pro`,
+      subject: `Invito al workspace ${workspace.name} su TaskWave`,
       html: workspaceInviteEmailHtml({
         workspaceName: workspace.name,
         inviterName,

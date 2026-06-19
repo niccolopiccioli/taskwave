@@ -1,5 +1,5 @@
 """
-TaskFlow Pro - Views API
+TaskWave - Views API
 """
 
 from rest_framework import viewsets, status, permissions

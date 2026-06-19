@@ -1,5 +1,5 @@
 """
-Django settings for TaskFlow Pro backend.
+Django settings for TaskWave backend (deprecated).
 """
 
 import os
@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY = "django-insecure-taskflow-pro-secret-key-change-in-production"
+SECRET_KEY = "django-insecure-taskwave-legacy-secret-change-in-production"
 
 DEBUG = True
 

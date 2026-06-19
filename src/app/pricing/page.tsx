@@ -2,16 +2,37 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { CreditCard } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown, Sparkles } from 'lucide-react';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { PlanRecommender, getHighlightedPlan } from '@/components/pricing/plan-recommender';
 import { PricingCards } from '@/components/pricing/pricing-cards';
 import { PlanComparisonMatrix } from '@/components/pricing/plan-comparison-matrix';
+import { ContactSheet } from '@/components/layout/contact-sheet';
+import { AppleHero, ScrollReveal } from '@/components/marketing/apple-sections';
 import { createClient } from '@/lib/supabase/client';
 import type { PlanTier } from '@/lib/database.types';
 import { nextPlan, planLabel } from '@/lib/plans';
+
+const faqs = [
+  {
+    q: 'Posso restare sul piano gratuito per sempre?',
+    a: 'Sì. Il piano Free non ha scadenza: 3 board per workspace, Kanban completo, realtime e notifiche in-app. Upgrade solo quando ti serve di più.',
+  },
+  {
+    q: 'Cosa cambia passando a Pro?',
+    a: 'Inviti email, scadenze task, commenti, allegati, analytics workspace, export CSV e colonne personalizzate. Ideale per team fino a ~15 persone.',
+  },
+  {
+    q: 'Business è per chi?',
+    a: 'Team che vogliono API keys, webhook, audit log, custom fields, SSO e limiti generosi. Pensato per integrazioni e compliance.',
+  },
+  {
+    q: 'Posso cancellare in qualsiasi momento?',
+    a: 'Assolutamente. Dal portale Stripe gestisci abbonamento e fatture. Nessuna penale, nessuna chiamata commerciale.',
+  },
+];
 
 export default function PricingPage() {
   const router = useRouter();
@@ -19,6 +40,7 @@ export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [teamSize, setTeamSize] = useState(5);
   const [currentPlan, setCurrentPlan] = useState<PlanTier | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const highlightedPlan = getHighlightedPlan(teamSize);
 
   useEffect(() => {
@@ -78,86 +100,129 @@ export default function PricingPage() {
     <div className="min-h-screen bg-background noise-bg">
       <SiteHeader activePath="/pricing" />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
-
-      <div className="relative bg-amber-500/10 border-b border-amber-500/20 pt-14 sm:pt-16">
-        <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-center gap-2 text-xs sm:text-sm text-amber-200/90 text-center">
-          <CreditCard className="w-4 h-4" />
-          <span>
-            Modalità test Stripe — carta{' '}
-            <code className="bg-zinc-800 px-1.5 py-0.5 rounded text-xs">4242 4242 4242 4242</code>
-          </span>
-        </div>
-      </div>
-
-      <section className="py-12 sm:py-16 px-4 sm:px-6 relative">
-        <div className="container mx-auto max-w-4xl text-center mb-10">
-          <motion.h1
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-4"
+      <AppleHero
+        eyebrow="Prezzi"
+        title={
+          <>
+            Semplice.
+            <br />
+            <span className="bg-gradient-to-r from-teal-300 to-emerald-400 bg-clip-text text-transparent">
+              Trasparente.
+            </span>
+          </>
+        }
+        subtitle="Inizia gratis. Scala quando il team cresce. Ogni piano sblocca funzioni reali — niente paywall su ciò che serve per lavorare."
+      >
+        {currentPlan && upgradeTarget && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mt-8 inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-teal-500/10 px-4 py-2 text-sm text-teal-300"
           >
-            Scegli il piano giusto per il tuo team
-          </motion.h1>
-          <p className="text-lg text-muted-foreground">
-            Tariffe trasparenti. Ogni piano sblocca funzioni reali nel prodotto.
-          </p>
-          {currentPlan && upgradeTarget && (
-            <p className="mt-4 text-sm text-primary">
-              Sei su <strong>{planLabel(currentPlan)}</strong> — il prossimo step è{' '}
-              <strong>{planLabel(upgradeTarget)}</strong>
-            </p>
-          )}
-        </div>
+            <Sparkles className="h-4 w-4" />
+            Sei su {planLabel(currentPlan)} — prossimo step: {planLabel(upgradeTarget)}
+          </motion.p>
+        )}
+      </AppleHero>
 
-        <div className="container mx-auto max-w-6xl grid lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-2">
-            <PlanRecommender
-              teamSize={teamSize}
-              onTeamSizeChange={setTeamSize}
-              highlightedPlan={highlightedPlan}
-              currentPlan={currentPlan}
-            />
+      <section className="pb-20 px-4 sm:px-6 relative">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="container mx-auto max-w-6xl"
+        >
+          <div className="rounded-[2rem] border border-white/[0.08] bg-zinc-950/60 backdrop-blur-xl p-6 sm:p-10 shadow-2xl shadow-black/40">
+            <div className="grid lg:grid-cols-5 gap-10">
+              <div className="lg:col-span-2">
+                <PlanRecommender
+                  teamSize={teamSize}
+                  onTeamSizeChange={setTeamSize}
+                  highlightedPlan={highlightedPlan}
+                  currentPlan={currentPlan}
+                />
+              </div>
+              <div className="lg:col-span-3">
+                <PricingCards
+                  highlightedPlan={highlightedPlan}
+                  currentPlan={currentPlan}
+                  loadingPlan={loadingPlan}
+                  onSelectPlan={handlePlanAction}
+                />
+              </div>
+            </div>
           </div>
-          <div className="lg:col-span-3">
-            <PricingCards
-              highlightedPlan={highlightedPlan}
-              currentPlan={currentPlan}
-              loadingPlan={loadingPlan}
-              onSelectPlan={handlePlanAction}
-            />
-          </div>
-        </div>
+          <p className="text-center text-xs text-muted-foreground mt-6">
+            Prezzi in EUR · IVA esclusa · Stripe test mode — carta{' '}
+            <code className="bg-white/5 px-1.5 py-0.5 rounded">4242 4242 4242 4242</code>
+          </p>
+        </motion.div>
       </section>
 
-      <section className="py-12 px-4 sm:px-6 border-t border-border/40">
-        <div className="container mx-auto max-w-5xl">
-          <h2 className="text-2xl font-display font-bold text-center mb-8">
+      <section className="py-24 border-t border-white/[0.06]">
+        <ScrollReveal className="container mx-auto px-4 sm:px-6 max-w-5xl">
+          <h2 className="text-3xl sm:text-4xl font-display font-bold text-center mb-4">
             Confronto completo
           </h2>
-          <PlanComparisonMatrix />
+          <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
+            Ogni dettaglio, una riga. Nessuna sorpresa al checkout.
+          </p>
+          <div className="rounded-3xl border border-white/[0.08] overflow-hidden bg-zinc-950/50">
+            <PlanComparisonMatrix />
+          </div>
+        </ScrollReveal>
+      </section>
+
+      <section className="py-24 sm:py-32 border-t border-white/[0.06]">
+        <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
+          <ScrollReveal className="text-center mb-12">
+            <h2 className="text-3xl font-display font-bold">Domande frequenti</h2>
+          </ScrollReveal>
+          <div className="space-y-3">
+            {faqs.map((faq, i) => (
+              <ScrollReveal key={faq.q} delay={i * 0.05}>
+                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left hover:bg-white/[0.02] transition-colors"
+                  >
+                    <span className="font-medium">{faq.q}</span>
+                    <motion.span animate={{ rotate: openFaq === i ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                      <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
+                    </motion.span>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {openFaq === i && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <p className="px-6 pb-5 text-muted-foreground text-sm leading-relaxed">{faq.a}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="py-16 px-4 border-t border-border/40 relative">
-        <div className="container mx-auto max-w-3xl">
-          <h2 className="text-2xl font-display font-bold text-center mb-10">Domande frequenti</h2>
-          <div className="space-y-6">
-            <div className="p-4 rounded-xl border border-border/60 bg-card/30">
-              <h3 className="font-semibold mb-2">Posso cambiare piano in seguito?</h3>
-              <p className="text-muted-foreground text-sm">
-                Certamente! Upgrade o downgrade dal portale di fatturazione in qualsiasi momento.
-              </p>
-            </div>
-            <div className="p-4 rounded-xl border border-border/60 bg-card/30">
-              <h3 className="font-semibold mb-2">Cosa cambia tra Free e Pro?</h3>
-              <p className="text-muted-foreground text-sm">
-                Pro sblocca inviti email, scadenze, commenti, allegati, analytics, export CSV e colonne
-                personalizzate.
-              </p>
-            </div>
-          </div>
-        </div>
+      <section className="py-32 border-t border-white/[0.06]">
+        <ScrollReveal className="container mx-auto px-4 text-center">
+          <h2 className="text-2xl sm:text-3xl font-display font-bold mb-4">Hai bisogno di aiuto per scegliere?</h2>
+          <p className="text-muted-foreground mb-8">Scrivici — ti aiutiamo a capire quale piano fa per te.</p>
+          <ContactSheet
+            triggerLabel="Contattaci"
+            triggerClassName="inline-flex items-center rounded-full bg-white text-zinc-950 font-semibold px-8 py-3 hover:bg-white/90 transition-colors"
+          />
+        </ScrollReveal>
       </section>
 
       <SiteFooter />

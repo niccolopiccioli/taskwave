@@ -79,7 +79,7 @@ export async function POST(
       return NextResponse.json({ error: 'API keys richiedono il piano Business.' }, { status: 403 });
     }
 
-    const rawKey = `tfp_${randomBytes(24).toString('hex')}`;
+    const rawKey = `tw_${randomBytes(24).toString('hex')}`;
     const prefix = rawKey.slice(0, 12);
 
     const { data, error } = await supabase

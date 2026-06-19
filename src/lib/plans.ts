@@ -43,7 +43,7 @@ export const PLAN_CONFIG: Record<PlanTier, PlanConfig> = {
       'Max 3 board per workspace',
       'Colonne Kanban standard',
       'Task con titolo e priorità',
-      'Branding TaskFlow sulle board',
+      'Branding TaskWave sulle board',
     ],
   },
   pro: {
@@ -106,7 +106,8 @@ export const PLAN_CONFIG: Record<PlanTier, PlanConfig> = {
       'API keys e REST API',
       'Guest link view-only',
       'Allegati fino a 100 MB',
-      'SSO / SAML (coming soon)',
+      'Webhooks outbound su eventi task',
+      'SSO / SAML (configurazione su richiesta)',
       'Supporto dedicato',
     ],
   },
@@ -173,7 +174,7 @@ export const COMPARISON_MATRIX: Array<{
     rows: [
       { label: 'Audit log', free: false, pro: false, business: true },
       { label: 'API keys', free: false, pro: false, business: true },
-      { label: 'SSO / SAML', free: false, pro: false, business: 'Coming soon' },
+      { label: 'SSO / SAML', free: false, pro: false, business: 'Su richiesta' },
     ],
   },
 ];

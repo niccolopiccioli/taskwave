@@ -1,62 +1,12 @@
-'use client';
-
-import { Button } from "@/components/ui/button";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { SiteHeader } from '@/components/layout/site-header';
+import { SiteFooter } from '@/components/layout/site-footer';
+import { getBlogPosts } from '@/lib/blog';
 
 export default function BlogPage() {
-  const posts = [
-    {
-      id: 1,
-      title: "Come gestire progetti agili con TaskFlow Pro",
-      excerpt: "Una guida completa su come implementare le metodologie agile nel tuo team utilizzando le nostre funzionalità.",
-      date: "15 Feb 2026",
-      category: "Guide",
-      readTime: "5 min",
-    },
-    {
-      id: 2,
-      title: "5 errori da evitare nel project management",
-      excerpt: "Scopri i mistake più comuni che i team commettono e come evitarli per migliorare la produttività.",
-      date: "8 Feb 2026",
-      category: "Best Practices",
-      readTime: "4 min",
-    },
-    {
-      id: 3,
-      title: "Novità: Integrazione con Slack e Teams",
-      excerpt: "Annunciamo le nuove integrazioni che rendono TaskFlow Pro ancora più connesso al tuo workflow.",
-      date: "1 Feb 2026",
-      category: "Product",
-      readTime: "3 min",
-    },
-    {
-      id: 4,
-      title: "Remote work: best practices per team distribuiti",
-      excerpt: "Consigli e strategie per mantenere alta la produttività quando il team lavora da remoto.",
-      date: "25 Gen 2026",
-      category: "Remote Work",
-      readTime: "6 min",
-    },
-    {
-      id: 5,
-      title: "Come abbiamo scalato TaskFlow Pro a 100k utenti",
-      excerpt: "Un caso studio tecnico su come abbiamo gestito la crescita esponenziale della nostra piattaforma.",
-      date: "18 Gen 2026",
-      category: "Engineering",
-      readTime: "8 min",
-    },
-    {
-      id: 6,
-      title: "Kanban vs Scrum: quale metodologia scegliere",
-      excerpt: "Confronto dettagliato tra le due metodologie più diffuse per aiutarti a scegliere quella giusta.",
-      date: "10 Gen 2026",
-      category: "Guide",
-      readTime: "5 min",
-    },
-  ];
-
-  const categories = ["Tutti", "Guide", "Best Practices", "Product", "Remote Work", "Engineering"];
+  const posts = getBlogPosts();
+  const categories = ['Tutti', ...Array.from(new Set(posts.map((p) => p.category)))];
 
   return (
     <div className="min-h-screen bg-background noise-bg">
@@ -96,9 +46,10 @@ export default function BlogPage() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post) => (
-              <article
-                key={post.id}
-                className="bg-white rounded-xl border shadow-sm hover:shadow-md transition-shadow"
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                className="bg-white rounded-xl border shadow-sm hover:shadow-md transition-shadow block"
               >
                 <div className="p-6">
                   <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
@@ -121,7 +72,7 @@ export default function BlogPage() {
                     Leggi tutto →
                   </span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </div>

@@ -1,5 +1,5 @@
 """
-TaskFlow Pro - Stripe billing views
+TaskWave - Stripe billing views
 """
 
 import stripe

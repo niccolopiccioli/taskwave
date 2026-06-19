@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Brand } from '@/components/layout/brand';
 import { ProfileMenu } from '@/components/layout/profile-menu';
 import { PlanBadge } from '@/components/layout/plan-badge';
+import { NotificationsInbox } from '@/components/layout/notifications-inbox';
 import type { Profile } from '@/lib/database.types';
 
 interface DashboardHeaderProps {
@@ -47,6 +48,7 @@ export function DashboardHeader({
 
           <div className="hidden md:flex items-center gap-3">
             {profile && <PlanBadge plan={profile.plan} />}
+            <NotificationsInbox />
 
             {canInvite && (
               <Button

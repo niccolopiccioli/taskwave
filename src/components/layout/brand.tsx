@@ -1,6 +1,14 @@
 import Link from 'next/link';
+import { Syne } from 'next/font/google';
 import { Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BRAND_NAME, BRAND_TAGLINE } from '@/lib/brand';
+
+const waveFont = Syne({
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  display: 'swap',
+});
 
 interface BrandProps {
   href?: string;
@@ -14,21 +22,18 @@ const sizes = {
     icon: 'h-7 w-7 rounded-lg',
     iconInner: 'h-3.5 w-3.5',
     title: 'text-sm',
-    pro: 'text-[10px]',
   },
   md: {
     wrap: 'gap-2.5',
     icon: 'h-8 w-8 rounded-[10px]',
     iconInner: 'h-4 w-4',
     title: 'text-[15px] sm:text-base',
-    pro: 'text-xs',
   },
   lg: {
     wrap: 'gap-3',
     icon: 'h-10 w-10 rounded-xl',
     iconInner: 'h-5 w-5',
     title: 'text-xl sm:text-2xl',
-    pro: 'text-sm',
   },
 };
 
@@ -46,13 +51,18 @@ export function Brand({ href = '/', className, size = 'md' }: BrandProps) {
         <Layers className={cn(s.iconInner, 'text-zinc-950')} strokeWidth={2.25} />
       </span>
       <span className="flex flex-col leading-none">
-        <span className={cn(s.title, 'font-semibold tracking-tight text-foreground')}>
-          TaskFlow
-          <span className="text-teal-400 font-bold"> Pro</span>
+        <span
+          className={cn(
+            s.title,
+            waveFont.className,
+            'font-bold tracking-tight text-foreground'
+          )}
+        >
+          {BRAND_NAME}
         </span>
         {size === 'lg' && (
-          <span className="mt-1 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Kanban · Team
+          <span className="mt-1 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground font-sans">
+            {BRAND_TAGLINE}
           </span>
         )}
       </span>
@@ -61,7 +71,7 @@ export function Brand({ href = '/', className, size = 'md' }: BrandProps) {
 
   if (href) {
     return (
-      <Link href={href} className="inline-flex shrink-0" aria-label="TaskFlow Pro home">
+      <Link href={href} className="inline-flex shrink-0" aria-label={`${BRAND_NAME} home`}>
         {content}
       </Link>
     );

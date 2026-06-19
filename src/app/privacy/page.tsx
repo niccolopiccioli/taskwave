@@ -21,7 +21,7 @@ export default function PrivacyPage() {
 
             <h2 className="text-xl font-semibold">1. Introduzione</h2>
             <p className="text-muted-foreground">
-              Benvenuti in TaskFlow Pro. La tua privacy è importante per noi. 
+              Benvenuti in TaskWave. La tua privacy è importante per noi. 
               Questa Privacy Policy spiega come raccogliamo, utilizziamo, divulghiamo 
               e salviamo le tue informazioni quando utilizzi il nostro servizio.
             </p>
@@ -33,8 +33,31 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
               <li><strong>Dati account:</strong> email, nome, cognome quando ti registri</li>
               <li><strong>Dati Workspace:</strong> nomi dei workspace, board, colonne e task che crei</li>
-              <li><strong>Dati di utilizzo:</strong> informazioni su come interagisci con il servizio</li>
-              <li><strong>Dati tecnici:</strong> indirizzo IP, browser, dispositivo</li>
+              <li><strong>Dati di utilizzo:</strong> informazioni su come interagisci con il servizio (solo se acconsenti agli analytics)</li>
+              <li><strong>Dati tecnici:</strong> hash dell&apos;indirizzo IP (mai in chiaro), browser, dispositivo</li>
+            </ul>
+
+            <h2 className="text-xl font-semibold">2.1 Opt-out tracciamento IP</h2>
+            <p className="text-muted-foreground">
+              Puoi opporti al tracciamento IP in qualsiasi momento tramite la pagina{' '}
+              <a href="/privacy/opt-out" className="text-primary hover:underline">Opt-out IP</a>
+              , dalle impostazioni account (tab Privacy) o attivando Global Privacy Control (GPC) / Do Not Track.
+              Quando l&apos;opt-out è attivo, non registriamo il tuo IP per analytics o marketing.
+            </p>
+
+            <h2 className="text-xl font-semibold">2.2 Base giuridica (GDPR)</h2>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              <li><strong>Esecuzione contratto:</strong> account, workspace, task</li>
+              <li><strong>Consenso:</strong> cookie analytics e marketing</li>
+              <li><strong>Interesse legittimo:</strong> sicurezza e prevenzione abusi (senza profilazione commerciale)</li>
+            </ul>
+
+            <h2 className="text-xl font-semibold">2.3 Sub-processori</h2>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              <li><strong>Supabase</strong> — database, auth, realtime (UE)</li>
+              <li><strong>Vercel</strong> — hosting e CDN</li>
+              <li><strong>Resend</strong> — email transazionali</li>
+              <li><strong>Stripe</strong> — pagamenti (se attivi un piano a pagamento)</li>
             </ul>
 
             <h2 className="text-xl font-semibold">3. Come utilizziamo i dati</h2>
@@ -71,11 +94,11 @@ export default function PrivacyPage() {
               Hai il diritto di:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Accedere ai tuoi dati personali</li>
-              <li>Correggere dati inesatti</li>
-              <li>Richiedere la cancellazione dei tuoi dati</li>
-              <li>Esportare i tuoi dati in formato leggibile</li>
-              <li>Opporti al trattamento dei tuoi dati</li>
+              <li>Accedere ai tuoi dati personali (export JSON dalle impostazioni Privacy)</li>
+              <li>Correggere dati inesatti (impostazioni profilo)</li>
+              <li>Richiedere la cancellazione del tuo account (impostazioni Privacy)</li>
+              <li>Esportare i tuoi dati in formato leggibile (JSON)</li>
+              <li>Opporti al trattamento IP/analytics/marketing (opt-out dedicato)</li>
             </ul>
 
             <h2 className="text-xl font-semibold">7. Conservazione dei dati</h2>
@@ -87,8 +110,10 @@ export default function PrivacyPage() {
 
             <h2 className="text-xl font-semibold">8. Cookies</h2>
             <p className="text-muted-foreground">
-              Utilizziamo cookie e tecnologie simili per migliorare la tua esperienza. 
-              Puoi gestire le preferenze dei cookie attraverso le impostazioni del tuo browser.
+              Utilizziamo cookie necessari per l&apos;autenticazione. Cookie analytics e marketing
+              sono disattivati finché non acconsenti dal banner cookie o dalle impostazioni.
+              Puoi gestire le preferenze in qualsiasi momento visitando{' '}
+              <a href="/?cookies=1" className="text-primary hover:underline">Gestione cookie</a>.
             </p>
 
             <h2 className="text-xl font-semibold">9. Modifiche</h2>
@@ -101,7 +126,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold">10. Contatti</h2>
             <p className="text-muted-foreground">
               Per qualsiasi domanda riguardo questa Privacy Policy, contattaci a: 
-              <strong> privacy@taskflowpro.it</strong>
+              <strong> privacy@taskwave.app</strong>
             </p>
           </div>
         </div>

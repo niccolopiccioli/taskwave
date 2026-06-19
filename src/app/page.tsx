@@ -29,7 +29,7 @@ const features = [
   {
     icon: FileCode,
     title: 'API documentata',
-    description: 'Integra TaskFlow nel tuo stack. Webhook, REST API, CLI ready.',
+    description: 'Integra TaskWave nel tuo stack. Webhook, REST API, CLI ready.',
     benefit: 'Automatizza workflow esistenti',
   },
   {
@@ -75,20 +75,12 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 text-teal-400 text-xs sm:text-sm mb-4 sm:mb-6 border border-teal-500/20">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-400" />
-              </span>
-              v3.0 — Powered by Supabase
-            </div>
-
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-balance mb-4 sm:mb-6 px-2">
               Gestisci il tuo team alla velocità del pensiero
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
-              TaskFlow Pro è il Kanban board che i team di sviluppo scelgono per accelerare le consegne, senza perdere il controllo.
+              TaskWave è il Kanban board che i team di sviluppo scelgono per accelerare le consegne, senza perdere il controllo.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -98,9 +90,9 @@ export default function LandingPage() {
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
-              <Link href="/pricing">
-                <Button variant="outline" size="lg" className="border-border/60">
-                  Vedi prezzi
+              <Link href="/features">
+                <Button variant="outline" size="lg" className="border-border/60 rounded-full px-8">
+                  Scopri le funzionalità
                 </Button>
               </Link>
             </div>
@@ -150,9 +142,14 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
               Tutto ciò che ti serve per shipping veloce
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">
               Funzionalità progettate per team di sviluppo che non vogliono compromessi tra potenza e semplicità.
             </p>
+            <Link href="/features">
+              <Button variant="outline" className="rounded-full border-white/10">
+                Esplora tutte le funzionalità →
+              </Button>
+            </Link>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -184,7 +181,7 @@ export default function LandingPage() {
               Amato dai team tecnici
             </h2>
             <p className="text-muted-foreground text-lg">
-              Migliaia di sviluppatori e PM si fidano di TaskFlow Pro ogni giorno.
+              Migliaia di sviluppatori e PM si fidano di TaskWave ogni giorno.
             </p>
           </div>
 

@@ -21,6 +21,7 @@ import {
   getWorkspaceStats,
   getWorkspaceAnalytics,
   exportWorkspaceCsv,
+  logAuditEvent,
 } from '@/lib/data';
 import type { Profile, WorkspaceWithMembers } from '@/lib/database.types';
 import { canCreateWorkspace, canAddMember, canCreateBoard, canSendEmailInvites, hasFeature } from '@/lib/plans';
@@ -28,9 +29,15 @@ import { canInviteMembers } from '@/lib/workspace-permissions';
 import { DashboardHeader } from '@/components/layout/dashboard-header';
 import { WorkspaceTeamPanel } from '@/components/workspace/workspace-team-panel';
 import { WorkspaceAuditPanel } from '@/components/workspace/workspace-audit-panel';
+import { WorkspaceWebhooksPanel } from '@/components/workspace/workspace-webhooks-panel';
+import { WorkspaceCustomFieldsPanel } from '@/components/workspace/workspace-custom-fields-panel';
+import { WorkspaceActivityFeed } from '@/components/workspace/workspace-activity-feed';
 import { PlanGate } from '@/components/plan/plan-gate';
 import { UpgradeCtaBanner } from '@/components/pricing/pricing-cards';
 import { PendingInvitesBanner } from '@/components/workspace/pending-invites-banner';
+import { CommandPalette } from '@/components/command-palette';
+import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard';
+import { BOARD_TEMPLATES, type BoardTemplateId } from '@/lib/board-templates';
 
 interface Board {
   id: string;
@@ -76,6 +83,8 @@ function DashboardContent() {
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [newBoardName, setNewBoardName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
+  const [boardTemplate, setBoardTemplate] = useState<BoardTemplateId>('default');
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadData = async () => {
@@ -107,6 +116,12 @@ function DashboardContent() {
     loadData().finally(() => setIsLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!isLoading && workspaces.length === 0 && !localStorage.getItem('taskwave_onboarding_done')) {
+      setShowOnboarding(true);
+    }
+  }, [isLoading, workspaces.length]);
 
   useEffect(() => {
     if (searchParams.get('checkout') === 'success') {
@@ -169,7 +184,11 @@ function DashboardContent() {
 
     setIsSubmitting(true);
     try {
-      await createBoard(supabase, selectedWorkspace.id, newBoardName);
+      const board = await createBoard(supabase, selectedWorkspace.id, newBoardName, '', boardTemplate);
+      await logAuditEvent(supabase, selectedWorkspace.id, 'board.created', 'board', board.id, {
+        name: newBoardName,
+        template: boardTemplate,
+      });
       setCreateBoardOpen(false);
       setNewBoardName('');
       const boardsData = await getBoards(supabase, selectedWorkspace.id);
@@ -280,6 +299,34 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-background">
+      <CommandPalette
+        onInvite={() => setInviteMemberOpen(true)}
+        onManageBilling={handleManageBilling}
+      />
+      {showOnboarding && (
+        <OnboardingWizard
+          onSkip={() => {
+            localStorage.setItem('taskwave_onboarding_done', '1');
+            setShowOnboarding(false);
+          }}
+          onComplete={async ({ workspaceName, boardName }) => {
+            localStorage.setItem('taskwave_onboarding_done', '1');
+            setShowOnboarding(false);
+            try {
+              const ws = await createWorkspace(supabase, workspaceName);
+              await createBoard(supabase, ws.id, boardName, '', 'sprint');
+              await loadData();
+              toast({ title: 'Setup completato!', description: 'Workspace e board pronti.' });
+            } catch (e) {
+              toast({
+                variant: 'destructive',
+                title: 'Errore setup',
+                description: e instanceof Error ? e.message : 'Riprova',
+              });
+            }
+          }}
+        />
+      )}
       <DashboardHeader
         profile={profile}
         workspaceName={selectedWorkspace?.name}
@@ -466,6 +513,9 @@ function DashboardContent() {
               onWorkspaceDeleted={handleWorkspaceLeftOrDeleted}
             />
             <WorkspaceAuditPanel workspaceId={selectedWorkspace.id} plan={profile.plan} />
+            <WorkspaceWebhooksPanel workspaceId={selectedWorkspace.id} plan={profile.plan} />
+            <WorkspaceCustomFieldsPanel workspaceId={selectedWorkspace.id} plan={profile.plan} />
+            <WorkspaceActivityFeed workspaceId={selectedWorkspace.id} plan={profile.plan} />
           </div>
         )}
       </main>
@@ -503,6 +553,21 @@ function DashboardContent() {
             <DialogDescription>Una board Kanban per gestire i tuoi task.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="board-template">Template</Label>
+              <select
+                id="board-template"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                value={boardTemplate}
+                onChange={(e) => setBoardTemplate(e.target.value as BoardTemplateId)}
+              >
+                {Object.entries(BOARD_TEMPLATES).map(([id, t]) => (
+                  <option key={id} value={id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="board-name">Nome della board</Label>
               <Input

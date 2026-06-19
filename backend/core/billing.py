@@ -1,5 +1,5 @@
 """
-TaskFlow Pro - Stripe billing helpers
+TaskWave - Stripe billing helpers
 """
 
 import stripe

@@ -9,8 +9,6 @@ import type {
 
 type Client = SupabaseClient<Database>;
 
-const DEFAULT_COLUMNS = ['Da Fare', 'In Progress', 'Fatto'];
-
 export async function getProfile(supabase: Client): Promise<Profile | null> {
   const {
     data: { user },
@@ -244,12 +242,18 @@ export async function getBoards(supabase: Client, workspaceId: string) {
   return withColumns;
 }
 
+import type { BoardTemplateId } from '@/lib/board-templates';
+
 export async function createBoard(
   supabase: Client,
   workspaceId: string,
   name: string,
-  description = ''
+  description = '',
+  templateId: BoardTemplateId = 'default'
 ) {
+  const { BOARD_TEMPLATES } = await import('@/lib/board-templates');
+  const template = BOARD_TEMPLATES[templateId] || BOARD_TEMPLATES.default;
+
   const { data: board, error } = await supabase
     .from('boards')
     .insert({ workspace_id: workspaceId, name, description })
@@ -258,13 +262,26 @@ export async function createBoard(
 
   if (error) throw new Error(error.message);
 
-  const columnInserts = DEFAULT_COLUMNS.map((colName, index) => ({
+  const columnInserts = template.columns.map((colName, index) => ({
     board_id: board.id,
     name: colName,
     position: index,
   }));
 
-  await supabase.from('columns').insert(columnInserts);
+  const { data: columns } = await supabase.from('columns').insert(columnInserts).select();
+
+  if (columns?.length && template.tasks.length) {
+    for (const t of template.tasks) {
+      const col = columns[t.column];
+      if (!col) continue;
+      await supabase.from('tasks').insert({
+        column_id: col.id,
+        title: t.title,
+        priority: t.priority,
+        position: 0,
+      });
+    }
+  }
 
   return board;
 }
@@ -378,6 +395,69 @@ export async function createTask(
     .single();
 
   if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function deleteTask(supabase: Client, taskId: string) {
+  const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteColumn(supabase: Client, columnId: string) {
+  const { data: tasks } = await supabase
+    .from('tasks')
+    .select('id')
+    .eq('column_id', columnId);
+  if (tasks?.length) {
+    throw new Error('Rimuovi o sposta i task prima di eliminare la colonna.');
+  }
+  const { error } = await supabase.from('columns').delete().eq('id', columnId);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteBoard(supabase: Client, boardId: string) {
+  const { error } = await supabase.from('boards').delete().eq('id', boardId);
+  if (error) throw new Error(error.message);
+}
+
+export async function getWorkspaceMembersForBoard(
+  supabase: Client,
+  workspaceId: string
+): Promise<Profile[]> {
+  const { data: members } = await supabase
+    .from('workspace_members')
+    .select('user_id')
+    .eq('workspace_id', workspaceId);
+
+  if (!members?.length) return [];
+
+  const profiles = await Promise.all(
+    members.map(async (m) => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', m.user_id)
+        .single();
+      return data;
+    })
+  );
+
+  return profiles.filter(Boolean) as Profile[];
+}
+
+export async function getAttachmentDownloadUrl(attachmentId: string) {
+  const response = await fetch(`/api/tasks/attachments/${attachmentId}/download`);
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Download non disponibile');
+  return data.url as string;
+}
+
+export async function deleteTaskAttachment(attachmentId: string) {
+  const response = await fetch(`/api/tasks/attachments/${attachmentId}`, {
+    method: 'DELETE',
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Impossibile eliminare allegato');
   return data;
 }
 

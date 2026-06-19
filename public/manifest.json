@@ -1,0 +1,16 @@
+{
+  "name": "TaskWave",
+  "short_name": "TaskWave",
+  "description": "Kanban per team di sviluppo",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#14b8a6",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
--- TaskFlow Pro - Initial Schema
+-- TaskWave - Initial Schema
 
 CREATE TYPE plan_tier AS ENUM ('free', 'pro', 'business');
 CREATE TYPE member_role AS ENUM ('admin', 'member');

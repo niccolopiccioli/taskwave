@@ -1,5 +1,5 @@
 """
-URL configuration for TaskFlow Pro backend.
+URL configuration for TaskWave backend.
 """
 
 from django.contrib import admin

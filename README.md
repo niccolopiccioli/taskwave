@@ -4,7 +4,7 @@
 
 > **In sintesi:** crei workspace per i tuoi progetti, organizzi il lavoro in board con colonne (Backlog → In progress → Done), assegni task ai membri del team e tutti vedono gli aggiornamenti **in tempo reale** — dal browser o come PWA installabile. Parti **gratis**; paghi solo se ti servono inviti email, allegati, API o integrazioni avanzate.
 
-**Demo live:** [taskwave-rust.vercel.app](https://taskwave-rust.vercel.app)
+**Demo live:** [taskwave-rust.vercel.app](https://taskwave-rust.vercel.app) — dominio canonico finché `taskwave.vercel.app` non viene riassegnato nel dashboard Vercel (attualmente punta a un deploy obsoleto).
 
 ---
 
@@ -299,8 +299,8 @@ docs/                    # Backup, monitoring
 ## Setup locale
 
 ```bash
-git clone https://github.com/niccolopiccioli/taskflow-pro.git
-cd taskflow-pro
+git clone https://github.com/niccolopiccioli/taskwave.git
+cd taskwave
 npm install
 cp .env.example .env.local   # compila Supabase, Stripe, Resend, PRIVACY_IP_SALT
 npm run dev                    # http://localhost:3000
@@ -330,9 +330,8 @@ vercel deploy --prod
 ```
 
 - **Progetto Vercel:** `taskwave`
-- **URL attuale:** [taskwave-rust.vercel.app](https://taskwave-rust.vercel.app)
-- Imposta `NEXT_PUBLIC_APP_URL`, aggiorna Supabase Auth URLs e webhook Stripe sul dominio finale
-- Per `taskwave.vercel.app`: Vercel Dashboard → taskwave → Settings → Domains
+- **URL produzione:** [taskwave.vercel.app](https://taskwave-rust.vercel.app)
+- Imposta `NEXT_PUBLIC_APP_URL=https://taskwave-rust.vercel.app` su Vercel (progetto **taskwave**)
 
 ---
 
@@ -349,7 +348,7 @@ I test coprono landing, pricing, blog, opt-out privacy, redirect auth e board.
 
 ## Contatti
 
-- **Sito:** [taskwave-rust.vercel.app](https://taskwave-rust.vercel.app)
+- **Sito:** [taskwave.vercel.app](https://taskwave-rust.vercel.app)
 - **Form:** pulsante “Contattaci” nell’header del sito
 - **Email:** `hello@taskwave.app`
 

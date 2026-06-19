@@ -1,5 +1,5 @@
 """
-TaskFlow Pro - URL Configuration
+TaskWave - URL Configuration
 """
 
 from django.urls import path, include

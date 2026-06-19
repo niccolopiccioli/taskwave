@@ -1,5 +1,5 @@
 """
-TaskFlow Pro - Modelli del database
+TaskWave - Modelli del database
 """
 
 import uuid

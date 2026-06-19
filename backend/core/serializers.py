@@ -1,5 +1,5 @@
 """
-TaskFlow Pro - Serializers
+TaskWave - Serializers
 """
 
 from rest_framework import serializers

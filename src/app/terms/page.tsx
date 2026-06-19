@@ -21,14 +21,14 @@ export default function TermsPage() {
 
             <h2 className="text-xl font-semibold">1. Accettazione dei termini</h2>
             <p className="text-muted-foreground">
-              Accedendo o utilizzando TaskFlow Pro, accetti di essere vincolato da 
+              Accedendo o utilizzando TaskWave, accetti di essere vincolato da 
               questi Termini di Servizio. Se non accetti questi termini, non utilizzare 
               il servizio.
             </p>
 
             <h2 className="text-xl font-semibold">2. Descrizione del servizio</h2>
             <p className="text-muted-foreground">
-              TaskFlow Pro è una piattaforma di project management che permette ai team 
+              TaskWave è una piattaforma di project management che permette ai team 
               di gestire progetti, task e collaborare in modo efficiente. Il servizio 
               include funzionalità di board Kanban, gestione workspace, e integrazioni.
             </p>
@@ -58,7 +58,7 @@ export default function TermsPage() {
 
             <h2 className="text-xl font-semibold">5. Contenuti degli utenti</h2>
             <p className="text-muted-foreground">
-              Sei proprietario dei contenuti che crei su TaskFlow Pro. Con la creazione 
+              Sei proprietario dei contenuti che crei su TaskWave. Con la creazione 
               di contenuti, ci concedi una licenza per utilizzarli al fine di fornirti 
               il servizio.
             </p>
@@ -72,52 +72,61 @@ export default function TermsPage() {
 
             <h2 className="text-xl font-semibold">7. Proprietà intellettuale</h2>
             <p className="text-muted-foreground">
-              TaskFlow Pro e tutti i suoi componenti sono protetti da copyright e altri 
+              TaskWave e tutti i suoi componenti sono protetti da copyright e altri 
               diritti di proprietà intellettuale. Non puoi copiare, modificare o 
               distribuire il servizio senza autorizzazione scritta.
             </p>
 
-            <h2 className="text-xl font-semibold">8. Disclaimer</h2>
+            <h2 className="text-xl font-semibold">8. Privacy e dati personali</h2>
+            <p className="text-muted-foreground">
+              L&apos;utilizzo del servizio è regolato dalla nostra{' '}
+              <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
+              Puoi esercitare i diritti GDPR (accesso, export, cancellazione, opt-out IP) dalle
+              impostazioni account o dalla pagina{' '}
+              <a href="/privacy/opt-out" className="text-primary hover:underline">Opt-out IP</a>.
+            </p>
+
+            <h2 className="text-xl font-semibold">9. Disclaimer</h2>
             <p className="text-muted-foreground">
               IL SERVIZIO È FORNITO &quot;COSÌ COM&apos;È&quot; SENZA GARANZIE DI ALCUN TIPO. 
               NON GARANTIAMO CHE IL SERVIZIO SIA PRIVO DI ERRORI O VIRUS.
             </p>
 
-            <h2 className="text-xl font-semibold">9. Limitazione di responsabilità</h2>
+            <h2 className="text-xl font-semibold">10. Limitazione di responsabilità</h2>
             <p className="text-muted-foreground">
               NON SAREMO RESPONSABILI PER DANNI INDIRETTI, INCIDENTALI, SPECIALI 
               O CONSEQUENZIALI DERIVANTI DALL&apos;UTILIZZO DEL SERVIZIO.
             </p>
 
-            <h2 className="text-xl font-semibold">10. Indennizzo</h2>
+            <h2 className="text-xl font-semibold">11. Indennizzo</h2>
             <p className="text-muted-foreground">
-              Accetti di indennizzare e tenere indenne TaskFlow Pro da qualsiasi 
+              Accetti di indennizzare e tenere indenne TaskWave da qualsiasi 
               rivendicazione derivante dalla tua violazione di questi termini.
             </p>
 
-            <h2 className="text-xl font-semibold">11. Risoluzione</h2>
+            <h2 className="text-xl font-semibold">12. Risoluzione</h2>
             <p className="text-muted-foreground">
               Possiamo sospendere o terminare il tuo account in caso di violazione 
               di questi termini. Puoi eliminare il tuo account in qualsiasi momento.
             </p>
 
-            <h2 className="text-xl font-semibold">12. Legge applicabile</h2>
+            <h2 className="text-xl font-semibold">13. Legge applicabile</h2>
             <p className="text-muted-foreground">
               Questi termini sono regolati dalla legge italiana. Per qualsiasi 
               controversia sarà competente il Foro di Milano.
             </p>
 
-            <h2 className="text-xl font-semibold">13. Modifiche</h2>
+            <h2 className="text-xl font-semibold">14. Modifiche</h2>
             <p className="text-muted-foreground">
               Possiamo modificare questi termini in qualsiasi momento. L&apos;uso 
               continuato del servizio dopo le modifiche costituisce accettazione 
               dei nuovi termini.
             </p>
 
-            <h2 className="text-xl font-semibold">14. Contatti</h2>
+            <h2 className="text-xl font-semibold">15. Contatti</h2>
             <p className="text-muted-foreground">
               Per domande su questi termini, contattaci a: 
-              <strong> legal@taskflowpro.it</strong>
+              <strong> legal@taskwave.app</strong>
             </p>
           </div>
         </div>

@@ -10,6 +10,100 @@ import { Brand } from '@/components/layout/brand';
 
 const endpoints = [
   {
+    method: 'GET',
+    path: '/api/v1/workspaces?include=boards|members',
+    description: 'REST API Business — workspace (+ boards/members opzionali)',
+    auth: 'Bearer API key',
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/boards/{boardId}',
+    description: 'REST API Business — board con colonne e task',
+    auth: 'Bearer API key',
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/workspaces/{id}/members',
+    description: 'REST API Business — membri workspace',
+    auth: 'Bearer API key',
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/tasks/{taskId}',
+    description: 'REST API Business — dettaglio task',
+    auth: 'Bearer API key',
+  },
+  {
+    method: 'PATCH',
+    path: '/api/v1/tasks/{taskId}',
+    description: 'REST API Business — aggiorna task',
+    auth: 'Bearer API key',
+  },
+  {
+    method: 'DELETE',
+    path: '/api/v1/tasks/{taskId}',
+    description: 'REST API Business — elimina task',
+    auth: 'Bearer API key',
+  },
+  {
+    method: 'GET',
+    path: '/api/workspaces/{id}/webhooks',
+    description: 'Lista webhook outbound (Business)',
+    auth: true,
+  },
+  {
+    method: 'POST',
+    path: '/api/workspaces/{id}/webhooks',
+    description: 'Registra webhook su eventi task (Business)',
+    auth: true,
+  },
+  {
+    method: 'POST',
+    path: '/api/tasks/{id}/events',
+    description: 'Eventi task (notifiche, audit, webhook dispatch)',
+    auth: true,
+  },
+  {
+    method: 'POST',
+    path: '/api/workspaces/{id}/invite',
+    description: 'Invia invito email (Pro+). L\'invitato deve accettare.',
+    auth: true,
+  },
+  {
+    method: 'GET',
+    path: '/api/invitations/{token}',
+    description: 'Dettaglio invito pending',
+  },
+  {
+    method: 'POST',
+    path: '/api/invitations/{token}',
+    description: 'Accetta o rifiuta invito',
+    auth: true,
+  },
+  {
+    method: 'GET',
+    path: '/api/notifications',
+    description: 'Inbox notifiche utente',
+    auth: true,
+  },
+  {
+    method: 'POST',
+    path: '/api/tasks/{id}/attachments',
+    description: 'Upload allegato task (Pro+)',
+    auth: true,
+  },
+  {
+    method: 'GET',
+    path: '/api/tasks/attachments/{id}/download',
+    description: 'Download allegato (signed URL)',
+    auth: true,
+  },
+  {
+    method: 'GET',
+    path: '/api/sso/status',
+    description: 'Stato SSO/SAML (Business)',
+  },
+  {
     method: 'POST',
     path: '/api/stripe/checkout',
     description: 'Crea sessione Stripe Checkout per piano Pro o Business',
@@ -76,7 +170,7 @@ export default function DocsPage() {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 max-w-4xl">
         <h1 className="text-2xl sm:text-3xl font-display font-bold mb-2">Documentazione API</h1>
         <p className="text-muted-foreground mb-8">
-          TaskFlow Pro usa Supabase per auth e dati, Stripe per i pagamenti (test mode).
+          TaskWave usa Supabase per auth e dati, Stripe per i pagamenti (test mode).
         </p>
 
         <section className="mb-12">

@@ -55,7 +55,7 @@ function RegisterContent() {
       if (authData.session) {
         toast({
           title: 'Account creato!',
-          description: 'Benvenuto in TaskFlow Pro.',
+          description: 'Benvenuto in TaskWave.',
         });
         router.push(inviteToken ? `/invite/${inviteToken}` : '/dashboard');
         router.refresh();

@@ -133,7 +133,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 </h1>
                 <p className="text-muted-foreground mb-6">
                   <strong className="text-foreground">{invitation.inviter_name}</strong> ti ha
-                  invitato a collaborare su TaskFlow Pro.
+                  invitato a collaborare su TaskWave.
                 </p>
                 <p className="text-sm text-muted-foreground mb-6">
                   Invito per: <span className="text-foreground">{invitation.email}</span>

@@ -7,6 +7,9 @@ import {
   Palette,
   Bell,
   Shield,
+  EyeOff,
+  Download,
+  Trash2,
   Moon,
   Sun,
   Monitor,
@@ -45,12 +48,13 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
-type SettingsTab = 'profile' | 'appearance' | 'notifications' | 'security';
+type SettingsTab = 'profile' | 'appearance' | 'notifications' | 'privacy' | 'security';
 
 const TABS: Array<{ id: SettingsTab; label: string; icon: typeof User }> = [
   { id: 'profile', label: 'Profilo', icon: User },
   { id: 'appearance', label: 'Aspetto', icon: Palette },
   { id: 'notifications', label: 'Notifiche', icon: Bell },
+  { id: 'privacy', label: 'Privacy', icon: EyeOff },
   { id: 'security', label: 'Sicurezza', icon: Shield },
 ];
 
@@ -130,7 +134,17 @@ export function AccountSettingsSheet({
   const [fullName, setFullName] = useState(profile?.full_name || '');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [mfaQr, setMfaQr] = useState<string | null>(null);
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState('');
+  const [mfaLoading, setMfaLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [privacy, setPrivacy] = useState({
+    ip_tracking_opt_out: false,
+    analytics_opt_out: false,
+    marketing_opt_out: false,
+  });
 
   const theme = useUIStore((s) => s.theme);
   const accent = useUIStore((s) => s.accent);
@@ -143,9 +157,95 @@ export function AccountSettingsSheet({
   const setReduceMotion = useUIStore((s) => s.setReduceMotion);
   const setNotification = useUIStore((s) => s.setNotification);
 
+  const syncNotificationPref = async (
+    key: 'notify_email' | 'notify_assigned' | 'notify_comments' | 'notify_moves',
+    value: boolean,
+    localKey: 'email' | 'taskAssigned' | 'workspaceUpdates' | 'weeklyDigest'
+  ) => {
+    setNotification(localKey, value);
+    try {
+      await fetch('/api/profile/notification-preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value }),
+      });
+    } catch {
+      /* local fallback */
+    }
+  };
+
   useEffect(() => {
     if (open && profile) setFullName(profile.full_name || '');
   }, [open, profile]);
+
+  useEffect(() => {
+    if (!open) return;
+    fetch('/api/profile/privacy-preferences')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.preferences) setPrivacy(data.preferences);
+      })
+      .catch(() => undefined);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || tab !== 'security') return;
+    supabase.auth.mfa.listFactors().then(({ data }) => {
+      const verified = data?.totp?.some((f) => f.status === 'verified') ?? false;
+      setMfaEnabled(verified);
+    });
+  }, [open, tab, supabase]);
+
+  const startMfaEnroll = async () => {
+    setMfaLoading(true);
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: 'totp',
+        friendlyName: 'TaskWave Authenticator',
+      });
+      if (error) throw error;
+      setMfaQr(data.totp.qr_code);
+      setMfaFactorId(data.id);
+    } catch (e) {
+      toast({
+        title: 'Errore MFA',
+        description: e instanceof Error ? e.message : 'Impossibile avviare 2FA',
+        variant: 'destructive',
+      });
+    } finally {
+      setMfaLoading(false);
+    }
+  };
+
+  const verifyMfaEnroll = async () => {
+    if (!mfaFactorId || !mfaCode.trim()) return;
+    setMfaLoading(true);
+    try {
+      const { data: challenge, error: chErr } = await supabase.auth.mfa.challenge({
+        factorId: mfaFactorId,
+      });
+      if (chErr) throw chErr;
+      const { error } = await supabase.auth.mfa.verify({
+        factorId: mfaFactorId,
+        challengeId: challenge.id,
+        code: mfaCode.trim(),
+      });
+      if (error) throw error;
+      setMfaEnabled(true);
+      setMfaQr(null);
+      setMfaFactorId(null);
+      setMfaCode('');
+      toast({ title: '2FA attivata', description: 'Autenticazione a due fattori configurata.' });
+    } catch (e) {
+      toast({
+        title: 'Codice non valido',
+        description: e instanceof Error ? e.message : 'Riprova',
+        variant: 'destructive',
+      });
+    } finally {
+      setMfaLoading(false);
+    }
+  };
 
   const initials = profile?.full_name?.charAt(0).toUpperCase() || 'U';
   const memberSince = profile?.created_at
@@ -167,6 +267,64 @@ export function AccountSettingsSheet({
         variant: 'destructive',
         title: 'Errore',
         description: e instanceof Error ? e.message : 'Salvataggio non riuscito',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const syncPrivacyPref = async (key: keyof typeof privacy, value: boolean) => {
+    const next = { ...privacy, [key]: value };
+    setPrivacy(next);
+    try {
+      await fetch('/api/profile/privacy-preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(next),
+      });
+    } catch {
+      toast({ variant: 'destructive', title: 'Errore', description: 'Preferenza non salvata' });
+    }
+  };
+
+  const handleExportData = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/profile/export');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `taskwave-export-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: 'Export completato' });
+    } catch (e) {
+      toast({
+        variant: 'destructive',
+        title: 'Export fallito',
+        description: e instanceof Error ? e.message : 'Errore',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!confirm('Eliminare definitivamente il tuo account e tutti i dati?')) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/profile/delete-account', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      window.location.href = '/';
+    } catch (e) {
+      toast({
+        variant: 'destructive',
+        title: 'Eliminazione fallita',
+        description: e instanceof Error ? e.message : 'Errore',
       });
     } finally {
       setSaving(false);
@@ -222,7 +380,7 @@ export function AccountSettingsSheet({
               </div>
               Impostazioni
             </SheetTitle>
-            <SheetDescription>Personalizza TaskFlow Pro come preferisci.</SheetDescription>
+            <SheetDescription>Personalizza TaskWave come preferisci.</SheetDescription>
           </SheetHeader>
         </div>
 
@@ -412,7 +570,7 @@ export function AccountSettingsSheet({
                     >
                       <Switch
                         checked={notifications.email}
-                        onCheckedChange={(v) => setNotification('email', v)}
+                        onCheckedChange={(v) => syncNotificationPref('notify_email', v, 'email')}
                       />
                     </SettingRow>
                     <SettingRow
@@ -422,7 +580,7 @@ export function AccountSettingsSheet({
                     >
                       <Switch
                         checked={notifications.taskAssigned}
-                        onCheckedChange={(v) => setNotification('taskAssigned', v)}
+                        onCheckedChange={(v) => syncNotificationPref('notify_assigned', v, 'taskAssigned')}
                       />
                     </SettingRow>
                     <SettingRow
@@ -432,7 +590,7 @@ export function AccountSettingsSheet({
                     >
                       <Switch
                         checked={notifications.workspaceUpdates}
-                        onCheckedChange={(v) => setNotification('workspaceUpdates', v)}
+                        onCheckedChange={(v) => syncNotificationPref('notify_comments', v, 'workspaceUpdates')}
                       />
                     </SettingRow>
                     <SettingRow
@@ -442,11 +600,65 @@ export function AccountSettingsSheet({
                     >
                       <Switch
                         checked={notifications.weeklyDigest}
-                        onCheckedChange={(v) => setNotification('weeklyDigest', v)}
+                        onCheckedChange={(v) => syncNotificationPref('notify_moves', v, 'weeklyDigest')}
                       />
                     </SettingRow>
                     <p className="text-xs text-muted-foreground pt-2">
-                      Le preferenze sono salvate su questo dispositivo.
+                      Le preferenze email e in-app sono sincronizzate con il tuo account.
+                    </p>
+                  </div>
+                )}
+
+                {tab === 'privacy' && (
+                  <div className="space-y-3">
+                    <SettingRow
+                      icon={EyeOff}
+                      title="Non tracciare il mio IP"
+                      description="Opt-out da analytics basate su indirizzo IP"
+                    >
+                      <Switch
+                        checked={privacy.ip_tracking_opt_out}
+                        onCheckedChange={(v) => syncPrivacyPref('ip_tracking_opt_out', v)}
+                      />
+                    </SettingRow>
+                    <SettingRow
+                      icon={Shield}
+                      title="Opt-out analytics"
+                      description="Escludi metriche di utilizzo anonime"
+                    >
+                      <Switch
+                        checked={privacy.analytics_opt_out}
+                        onCheckedChange={(v) => syncPrivacyPref('analytics_opt_out', v)}
+                      />
+                    </SettingRow>
+                    <SettingRow
+                      icon={Mail}
+                      title="Opt-out marketing"
+                      description="Nessuna comunicazione promozionale"
+                    >
+                      <Switch
+                        checked={privacy.marketing_opt_out}
+                        onCheckedChange={(v) => syncPrivacyPref('marketing_opt_out', v)}
+                      />
+                    </SettingRow>
+                    <Separator />
+                    <div className="flex flex-col gap-2">
+                      <Button variant="outline" className="gap-2" onClick={handleExportData} disabled={saving}>
+                        <Download className="h-4 w-4" /> Esporta i miei dati
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="gap-2 text-red-400 hover:text-red-300"
+                        onClick={handleDeleteAccount}
+                        disabled={saving}
+                      >
+                        <Trash2 className="h-4 w-4" /> Elimina account
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      <a href="/privacy/opt-out" className="text-primary hover:underline">
+                        Pagina opt-out pubblica
+                      </a>
                     </p>
                   </div>
                 )}
@@ -487,12 +699,35 @@ export function AccountSettingsSheet({
 
                     <Separator />
 
-                    <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
-                      <p className="text-sm font-medium text-amber-400 mb-1">Suggerimento sicurezza</p>
-                      <p className="text-xs text-muted-foreground">
-                        Usa una password unica e attiva l&apos;autenticazione a due fattori dal pannello
-                        Supabase quando sarà disponibile.
-                      </p>
+                    <div className="space-y-4">
+                      <p className="text-sm font-medium">Autenticazione a due fattori (2FA)</p>
+                      {mfaEnabled ? (
+                        <p className="text-sm text-emerald-400 flex items-center gap-2">
+                          <Check className="h-4 w-4" />
+                          2FA attiva sul tuo account
+                        </p>
+                      ) : mfaQr ? (
+                        <div className="space-y-3">
+                          <p className="text-xs text-muted-foreground">
+                            Scansiona il QR con la tua app authenticator e inserisci il codice.
+                          </p>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={mfaQr} alt="QR code 2FA" className="w-40 h-40 rounded-lg border border-border/60" />
+                          <Input
+                            value={mfaCode}
+                            onChange={(e) => setMfaCode(e.target.value)}
+                            placeholder="Codice a 6 cifre"
+                            inputMode="numeric"
+                          />
+                          <Button onClick={verifyMfaEnroll} disabled={mfaLoading || !mfaCode.trim()}>
+                            {mfaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verifica e attiva'}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button variant="outline" onClick={startMfaEnroll} disabled={mfaLoading}>
+                          {mfaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Configura 2FA TOTP'}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}

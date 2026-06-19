@@ -32,6 +32,13 @@ export interface Database {
           stripe_customer_id: string | null;
           stripe_subscription_id: string | null;
           stripe_price_id: string | null;
+          notify_email: boolean;
+          notify_assigned: boolean;
+          notify_comments: boolean;
+          notify_moves: boolean;
+          analytics_opt_out: boolean;
+          marketing_opt_out: boolean;
+          ip_tracking_opt_out: boolean;
           created_at: string;
           updated_at: string;
         },
@@ -52,6 +59,13 @@ export interface Database {
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
           stripe_price_id?: string | null;
+          notify_email?: boolean;
+          notify_assigned?: boolean;
+          notify_comments?: boolean;
+          notify_moves?: boolean;
+          analytics_opt_out?: boolean;
+          marketing_opt_out?: boolean;
+          ip_tracking_opt_out?: boolean;
           updated_at?: string;
         }
       >;
@@ -185,11 +199,131 @@ export interface Database {
           user_id: string;
           type: NotificationType;
           task_id: string | null;
+          title: string | null;
+          message: string | null;
+          workspace_id: string | null;
           read: boolean;
           created_at: string;
         },
-        { user_id: string; type: NotificationType; task_id?: string | null; read?: boolean },
-        { read?: boolean }
+        {
+          user_id: string;
+          type: NotificationType;
+          task_id?: string | null;
+          title?: string | null;
+          message?: string | null;
+          workspace_id?: string | null;
+          read?: boolean;
+        },
+        { read?: boolean; title?: string | null; message?: string | null }
+      >;
+      privacy_preferences: TableDef<
+        {
+          id: string;
+          user_id: string | null;
+          ip_hash: string | null;
+          analytics_opt_out: boolean;
+          marketing_opt_out: boolean;
+          ip_tracking_opt_out: boolean;
+          source: string;
+          verified_at: string | null;
+          created_at: string;
+          updated_at: string;
+        },
+        {
+          user_id?: string | null;
+          ip_hash?: string | null;
+          analytics_opt_out?: boolean;
+          marketing_opt_out?: boolean;
+          ip_tracking_opt_out?: boolean;
+          source?: string;
+          verified_at?: string | null;
+        },
+        {
+          ip_hash?: string | null;
+          analytics_opt_out?: boolean;
+          marketing_opt_out?: boolean;
+          ip_tracking_opt_out?: boolean;
+          source?: string;
+          verified_at?: string | null;
+          updated_at?: string;
+        }
+      >;
+      privacy_requests: TableDef<
+        {
+          id: string;
+          user_id: string | null;
+          email: string;
+          request_type: 'opt_out' | 'export' | 'delete';
+          status: 'pending' | 'verified' | 'completed' | 'cancelled';
+          token: string;
+          ip_hash: string | null;
+          metadata: Json;
+          created_at: string;
+          completed_at: string | null;
+        },
+        {
+          email: string;
+          request_type: 'opt_out' | 'export' | 'delete';
+          user_id?: string | null;
+          status?: 'pending' | 'verified' | 'completed' | 'cancelled';
+          token?: string;
+          ip_hash?: string | null;
+          metadata?: Json;
+          completed_at?: string | null;
+        },
+        {
+          status?: 'pending' | 'verified' | 'completed' | 'cancelled';
+          metadata?: Json;
+          completed_at?: string | null;
+        }
+      >;
+      workspace_webhooks: TableDef<
+        {
+          id: string;
+          workspace_id: string;
+          url: string;
+          secret: string;
+          events: string[];
+          active: boolean;
+          created_by: string;
+          created_at: string;
+        },
+        {
+          workspace_id: string;
+          url: string;
+          secret?: string;
+          events?: string[];
+          active?: boolean;
+          created_by: string;
+        },
+        { url?: string; events?: string[]; active?: boolean }
+      >;
+      task_custom_fields: TableDef<
+        {
+          id: string;
+          workspace_id: string;
+          name: string;
+          field_type: 'text' | 'number' | 'select';
+          options: Json;
+          created_at: string;
+        },
+        {
+          workspace_id: string;
+          name: string;
+          field_type?: 'text' | 'number' | 'select';
+          options?: Json;
+        },
+        { name?: string; field_type?: 'text' | 'number' | 'select'; options?: Json }
+      >;
+      task_custom_values: TableDef<
+        {
+          id: string;
+          task_id: string;
+          field_id: string;
+          value: string | null;
+        },
+        { task_id: string; field_id: string; value?: string | null },
+        { value?: string | null }
       >;
       task_attachments: TableDef<
         {
@@ -355,6 +489,42 @@ export interface Database {
         Args: { p_key_hash: string };
         Returns: { user_id: string; workspace_id: string | null }[];
       };
+      create_notification: {
+        Args: {
+          p_user_id: string;
+          p_type: NotificationType;
+          p_title: string;
+          p_message: string;
+          p_task_id?: string | null;
+          p_workspace_id?: string | null;
+        };
+        Returns: string;
+      };
+      upsert_privacy_preferences: {
+        Args: {
+          p_user_id: string;
+          p_ip_hash?: string | null;
+          p_analytics_opt_out?: boolean;
+          p_marketing_opt_out?: boolean;
+          p_ip_tracking_opt_out?: boolean;
+          p_source?: string;
+        };
+        Returns: string;
+      };
+      upsert_privacy_by_ip_hash: {
+        Args: {
+          p_ip_hash: string;
+          p_analytics_opt_out?: boolean;
+          p_marketing_opt_out?: boolean;
+          p_ip_tracking_opt_out?: boolean;
+          p_source?: string;
+        };
+        Returns: string;
+      };
+      delete_user_account: {
+        Args: { p_user_id: string };
+        Returns: undefined;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
@@ -373,6 +543,11 @@ export type TaskAttachment = Database['public']['Tables']['task_attachments']['R
 export type AuditLogEntry = Database['public']['Tables']['audit_log']['Row'];
 export type ApiKey = Database['public']['Tables']['api_keys']['Row'];
 export type BoardGuestLink = Database['public']['Tables']['board_guest_links']['Row'];
+export type WorkspaceWebhook = Database['public']['Tables']['workspace_webhooks']['Row'];
+export type PrivacyPreference = Database['public']['Tables']['privacy_preferences']['Row'];
+export type PrivacyRequest = Database['public']['Tables']['privacy_requests']['Row'];
+export type TaskCustomField = Database['public']['Tables']['task_custom_fields']['Row'];
+export type TaskCustomValue = Database['public']['Tables']['task_custom_values']['Row'];
 
 export interface WorkspaceWithMembers extends Workspace {
   members: Array<WorkspaceMember & { profile: Profile }>;

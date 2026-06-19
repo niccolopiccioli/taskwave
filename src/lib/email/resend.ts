@@ -1,4 +1,4 @@
-const FROM = 'TaskFlow Pro <onboarding@resend.dev>';
+const FROM = 'TaskWave <onboarding@resend.dev>';
 
 interface SendEmailParams {
   to: string;
@@ -48,6 +48,27 @@ export function workspaceInviteEmailHtml(opts: {
 <a href="${actionUrl}" style="display:inline-block;background:#14b8a6;color:#09090b;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;">
 Accetta invito
 </a></td></tr>
-<tr><td style="color:#71717a;font-size:12px;padding-top:24px;text-align:center;">TaskFlow Pro — Kanban per team</td></tr>
+<tr><td style="color:#71717a;font-size:12px;padding-top:24px;text-align:center;">TaskWave — Kanban per team</td></tr>
+</table></td></tr></table></body></html>`;
+}
+
+export function contactFormEmailHtml(opts: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}) {
+  const { name, email, subject, message } = opts;
+  const safe = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#09090b;padding:32px 16px;">
+<tr><td align="center">
+<table width="100%" style="max-width:560px;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:28px;">
+<tr><td style="color:#2dd4bf;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding-bottom:8px;">Nuovo messaggio TaskWave</td></tr>
+<tr><td style="color:#fafafa;font-size:18px;font-weight:600;padding-bottom:16px;">${safe(subject)}</td></tr>
+<tr><td style="color:#a1a1aa;font-size:14px;line-height:1.6;padding-bottom:8px;"><strong style="color:#e4e4e7;">Da:</strong> ${safe(name)} &lt;${safe(email)}&gt;</td></tr>
+<tr><td style="color:#e4e4e7;font-size:15px;line-height:1.7;white-space:pre-wrap;padding-top:16px;border-top:1px solid #27272a;">${safe(message)}</td></tr>
 </table></td></tr></table></body></html>`;
 }

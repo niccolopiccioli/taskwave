@@ -6,6 +6,7 @@ import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Brand } from '@/components/layout/brand';
+import { ContactSheet } from '@/components/layout/contact-sheet';
 import { cn } from '@/lib/utils';
 
 interface SiteHeaderProps {
@@ -13,9 +14,8 @@ interface SiteHeaderProps {
 }
 
 const navLinks = [
-  { href: '/#features', label: 'Funzionalità' },
+  { href: '/features', label: 'Funzionalità' },
   { href: '/pricing', label: 'Prezzi' },
-  { href: '/docs', label: 'API' },
   { href: '/about', label: 'About' },
 ];
 
@@ -56,6 +56,11 @@ export function SiteHeader({ activePath }: SiteHeaderProps) {
                 </Link>
               );
             })}
+            <ContactSheet
+              triggerClassName={cn(
+                activePath === '/contact' && 'bg-white/10 text-foreground shadow-sm'
+              )}
+            />
           </nav>
 
           <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
@@ -127,6 +132,7 @@ export function SiteHeader({ activePath }: SiteHeaderProps) {
                       </Link>
                     );
                   })}
+                  <ContactSheet onNavigate={() => setOpen(false)} triggerClassName="rounded-xl px-4 py-3 text-left text-[15px] font-medium text-muted-foreground hover:bg-white/[0.04] hover:text-foreground w-full" />
                 </nav>
                 <div className="mt-auto border-t border-white/[0.06] p-4 flex flex-col gap-2">
                   <Link href="/login" onClick={() => setOpen(false)}>

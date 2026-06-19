@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { maxAttachmentBytes } from '@/lib/plans';
+import { sanitizeFileName } from '@/lib/url-security';
+import { getTaskWorkspaceId } from '@/lib/task-workspace';
 
 export async function POST(
   request: Request,
@@ -43,7 +45,13 @@ export async function POST(
       );
     }
 
-    const filePath = `${user.id}/${params.id}/${Date.now()}-${file.name}`;
+    const taskWorkspaceId = await getTaskWorkspaceId(supabase, params.id);
+    if (!taskWorkspaceId) {
+      return NextResponse.json({ error: 'Task non trovato' }, { status: 404 });
+    }
+
+    const safeName = sanitizeFileName(file.name);
+    const filePath = `${user.id}/${params.id}/${Date.now()}-${safeName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('task-attachments')
@@ -58,7 +66,7 @@ export async function POST(
       .insert({
         task_id: params.id,
         uploaded_by: user.id,
-        file_name: file.name,
+        file_name: safeName,
         file_path: filePath,
         file_size: file.size,
         mime_type: file.type || null,
