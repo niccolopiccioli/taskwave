@@ -132,7 +132,13 @@ export async function inviteMemberByEmail(
     throw new Error(data.error || 'Impossibile inviare l\'invito');
   }
 
-  return data as { emailSent: boolean; message: string };
+  return data as {
+    ok: boolean;
+    inviteUrl?: string;
+    hasAccount: boolean;
+    inAppNotified: boolean;
+    message: string;
+  };
 }
 
 export async function listWorkspaceInvitations(workspaceId: string) {
@@ -214,7 +220,7 @@ export async function deleteWorkspaceApi(workspaceId: string) {
   const response = await fetch(`/api/workspaces/${workspaceId}`, {
     method: 'DELETE',
   });
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'Impossibile eliminare il workspace');
   return data;
 }

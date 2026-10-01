@@ -16,16 +16,13 @@ TaskWave can run in production on a **Vercel subdomain only** (e.g. `https://tas
 ## What works without a custom domain
 
 - Full app: workspaces, boards, realtime, billing, API
-- **Workspace invites via share link** — create an invite, use **Copy link** in the team panel, send the URL manually (chat, SMS, etc.)
-- Invite acceptance at `/invite/[token]` — works on the Vercel URL
-
-The invite API creates the invitation even if email delivery fails. The UI shows the link so admins are never blocked.
+- **Workspace invites in-app** — existing users get a dashboard notification; new users accept via **Copy link** + `/invite/[token]`
 
 ---
 
 ## What does not work without a custom domain
 
-- Automatic invitation emails to arbitrary addresses
+- **Automatic invitation emails** to arbitrary addresses (Resend API) — use in-app notification + share link instead
 - Verified sender for Supabase Auth (signup confirmation, password reset) via your own `@yourdomain` address
 - Using `*.vercel.app` as the Resend sending domain — **you do not control Vercel’s DNS**
 
@@ -35,15 +32,23 @@ If `RESEND_FROM` is unset, the code falls back to `onboarding@resend.dev`. That 
 
 ---
 
-## Inviting teammates today (no domain)
+## Workspace team invites (no custom domain required)
 
-1. Open your workspace → **Team**
-2. Enter the member’s email and send the invite
-3. If email is not configured, use **Copy link** on the pending invite
-4. Share the link (e.g. `https://taskwave-rust.vercel.app/invite/<token>`)
-5. The invitee registers or logs in with **the same email** as the invitation, then accepts
+Team invites **do not use the Resend API**. When you invite someone:
 
-Invites expire after 14 days (configurable in the database).
+1. A pending invitation is stored in the database with a unique link.
+2. **If they already have a TaskWave account** — they get an **in-app notification** and see the invite banner on `/dashboard`.
+3. **If they are new** — use **Copy link** in the Team panel and share the URL (chat, etc.). They must register with the **invited email** and accept.
+
+This works without verifying a sending domain. Resend is still used for auth emails (signup, password reset) and optional contact form when configured.
+
+### Periodic step-up OTP (optional, off by default)
+
+Every 4 hours the app can ask for a 6-digit code sent by email. **Leave `STEP_UP_OTP_ENABLED` unset** until you verify a domain in Resend; then set on Vercel:
+
+```env
+STEP_UP_OTP_ENABLED=true
+```
 
 ---
 
@@ -119,8 +124,8 @@ Connecting `yourdomain.com` to Vercel is **separate** from email. You can:
 
 ## Related files
 
-- `src/lib/email/resend.ts` — Resend client; non-fatal errors on invite route
-- `src/app/api/workspaces/[id]/invite/route.ts` — creates invite + optional email
+- `src/lib/email/resend.ts` — Resend client (auth, contact form, step-up OTP)
+- `src/app/api/workspaces/[id]/invite/route.ts` — creates invite + in-app notification (no Resend)
 - `.env.example` — environment variable reference
 
 Live demo: [taskwave-rust.vercel.app](https://taskwave-rust.vercel.app)

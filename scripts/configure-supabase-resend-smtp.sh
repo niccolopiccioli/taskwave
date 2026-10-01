@@ -8,6 +8,10 @@ set -euo pipefail
 PROJECT_REF="${PROJECT_REF:-lcubcugivegahjsbmepy}"
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 APP_URL="${NEXT_PUBLIC_APP_URL:-https://taskwave-rust.vercel.app}"
+RESEND_FROM="${RESEND_FROM:-TaskWave <hello@send.taskwave.app>}"
+# Extract bare email for Supabase smtp_admin_email
+SMTP_ADMIN_EMAIL="${RESEND_FROM#*<}"
+SMTP_ADMIN_EMAIL="${SMTP_ADMIN_EMAIL%>}"
 
 if [[ -f "$ROOT_DIR/.env.local" ]]; then
   # shellcheck disable=SC1091
@@ -34,7 +38,7 @@ curl -sS -X PATCH "https://api.supabase.com/v1/projects/${PROJECT_REF}/config/au
     \"mailer_autoconfirm\": true,
     \"site_url\": \"${APP_URL}\",
     \"uri_allow_list\": \"${APP_URL}/**,http://localhost:3000/**\",
-    \"smtp_admin_email\": \"onboarding@resend.dev\",
+    \"smtp_admin_email\": \"${SMTP_ADMIN_EMAIL}\",
     \"smtp_host\": \"smtp.resend.com\",
     \"smtp_port\": \"465\",
     \"smtp_user\": \"resend\",
@@ -42,6 +46,6 @@ curl -sS -X PATCH "https://api.supabase.com/v1/projects/${PROJECT_REF}/config/au
     \"smtp_sender_name\": \"TaskWave\"
   }" | python3 -m json.tool
 
-echo ""
-echo "Done. Test registration at ${APP_URL}/register"
-echo "Note: onboarding@resend.dev only delivers to your Resend account email until you verify a domain."
+echo "Done. SMTP sender: ${RESEND_FROM}"
+echo "Test registration at ${APP_URL}/register"
+echo "Ensure domain send.taskwave.app is verified in Resend before sending to external addresses."

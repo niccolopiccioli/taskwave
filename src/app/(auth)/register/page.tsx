@@ -53,6 +53,7 @@ function RegisterContent() {
       if (error) throw error;
 
       if (authData.session) {
+        await fetch('/api/auth/step-up/send', { method: 'PUT' });
         toast({
           title: 'Account creato!',
           description: 'Benvenuto in TaskWave.',

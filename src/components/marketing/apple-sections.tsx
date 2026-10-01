@@ -23,12 +23,12 @@ export function AppleHero({
   const opacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   return (
-    <section ref={ref} className={cn('relative min-h-[90vh] flex items-center overflow-hidden', className)}>
+    <section ref={ref} className={cn('relative min-h-[70vh] sm:min-h-[80vh] lg:min-h-[90vh] flex items-center overflow-hidden pt-14 sm:pt-0', className)}>
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-teal-500/10 blur-[120px] animate-pulse-slow" />
-        <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[min(800px,100vw)] h-[min(800px,100vw)] rounded-full bg-teal-500/10 blur-[80px] sm:blur-[120px] animate-pulse-slow" />
+        <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
       </div>
-      <motion.div style={{ y, opacity }} className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center max-w-5xl">
+      <motion.div style={{ y, opacity }} className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-32 text-center max-w-5xl">
         {eyebrow && (
           <motion.p
             initial={{ opacity: 0, y: 12 }}
@@ -43,7 +43,7 @@ export function AppleHero({
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight text-balance leading-[1.05]"
+          className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight text-balance leading-[1.08] sm:leading-[1.05]"
         >
           {title}
         </motion.h1>
@@ -87,10 +87,10 @@ export function AppleFeatureBlock({
   };
 
   return (
-    <section ref={ref} className="py-24 sm:py-32 lg:py-40 border-t border-white/[0.06]">
+    <section ref={ref} className="py-16 sm:py-24 lg:py-40 border-t border-border/60">
       <div
         className={cn(
-          'container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl grid lg:grid-cols-2 gap-12 lg:gap-20 items-center',
+          'container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center',
           reverse && 'lg:[direction:rtl] lg:*:[direction:ltr]'
         )}
       >
@@ -102,21 +102,21 @@ export function AppleFeatureBlock({
           <p className={cn('text-xs font-semibold uppercase tracking-[0.18em] mb-4', accentMap[accent].split(' ').pop())}>
             {label}
           </p>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold tracking-tight mb-6 text-balance">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-display font-bold tracking-tight mb-4 sm:mb-6 text-balance">
             {title}
           </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">{description}</p>
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">{description}</p>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, scale: 0.92 }}
           animate={inView ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           className={cn(
-            'relative rounded-3xl border border-white/[0.08] bg-gradient-to-br p-1 shadow-2xl',
+            'relative rounded-2xl sm:rounded-3xl border border-border/60 bg-gradient-to-br p-1 shadow-2xl',
             accentMap[accent].split(' ').slice(0, 2).join(' ')
           )}
         >
-          <div className="rounded-[22px] bg-zinc-950/80 backdrop-blur-xl overflow-hidden">{visual}</div>
+          <div className="rounded-[22px] bg-card/90 backdrop-blur-xl overflow-hidden">{visual}</div>
         </motion.div>
       </div>
     </section>
@@ -135,7 +135,7 @@ export function ScrollStat({ value, label }: { value: string; label: string }) {
       transition={{ duration: 0.6 }}
       className="text-center"
     >
-      <p className="text-4xl sm:text-5xl font-display font-bold bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
+      <p className="text-4xl sm:text-5xl font-display font-bold text-foreground">
         {value}
       </p>
       <p className="mt-2 text-sm text-muted-foreground">{label}</p>
@@ -149,7 +149,7 @@ export function StickyShowcase({
   items: Array<{ id: string; title: string; body: string; visual: ReactNode }>;
 }) {
   return (
-    <section className="py-24 border-t border-white/[0.06]">
+    <section className="py-24 border-t border-border/60">
       <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
         <div className="grid lg:grid-cols-2 gap-16">
           <div className="lg:sticky lg:top-32 lg:self-start space-y-16">
@@ -165,7 +165,7 @@ export function StickyShowcase({
             {items.map((item) => (
               <div
                 key={item.id}
-                className="rounded-3xl border border-white/[0.08] bg-zinc-900/50 overflow-hidden min-h-[280px]"
+                className="rounded-3xl border border-border/60 bg-card/50 overflow-hidden min-h-[280px]"
               >
                 {item.visual}
               </div>

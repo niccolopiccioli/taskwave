@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { sendResendEmail, workspaceInviteEmailHtml } from '@/lib/email/resend';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/rate-limit-request';
 
 export async function POST(
@@ -39,7 +38,7 @@ export async function POST(
     if (profile?.plan === 'free') {
       return NextResponse.json(
         {
-          error: 'Gli inviti email richiedono il piano Pro o Business. Passa a /pricing per fare upgrade.',
+          error: 'Gli inviti al team richiedono il piano Pro o Business. Passa a /pricing per fare upgrade.',
         },
         { status: 403 }
       );
@@ -85,28 +84,48 @@ export async function POST(
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const actionUrl = `${appUrl}/invite/${token}`;
+    const inviteUrl = `${appUrl}/invite/${token}`;
 
-    await sendResendEmail({
-      to: normalizedEmail,
-      subject: `Invito al workspace ${workspace.name} su TaskWave`,
-      html: workspaceInviteEmailHtml({
-        workspaceName: workspace.name,
-        inviterName,
-        actionUrl,
-      }),
-    });
+    const service = await createServiceClient();
+    const { data: inviteeProfile } = await service
+      .from('profiles')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
+
+    let inAppNotified = false;
+    if (inviteeProfile?.id) {
+      const { error: notifyError } = await service.rpc('create_notification', {
+        p_user_id: inviteeProfile.id,
+        p_type: 'invited',
+        p_title: `Invito a ${workspace.name}`,
+        p_message: `${inviterName} ti ha invitato nel workspace. Apri TaskWave per accettare.`,
+        p_task_id: null,
+        p_workspace_id: workspaceId,
+      });
+      inAppNotified = !notifyError;
+    }
+
+    const hasAccount = !!inviteeProfile?.id;
+    const message = hasAccount
+      ? inAppNotified
+        ? `${normalizedEmail} ha già un account TaskWave: riceverà una notifica in-app e vedrà l'invito in dashboard.`
+        : `${normalizedEmail} ha già un account: vedrà l'invito in dashboard al prossimo accesso.`
+      : `Invito creato. Condividi il link con ${normalizedEmail} — dovrà registrarsi con questa email per accettare.`;
 
     return NextResponse.json({
-      emailSent: true,
-      message: 'Invito inviato. L\'utente dovrà accettare per entrare nel team.',
+      ok: true,
+      inviteUrl,
+      hasAccount,
+      inAppNotified,
+      message,
     });
   } catch (error) {
     console.error('Invite error:', error);
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : 'Errore durante l\'invio dell\'invito',
+          error instanceof Error ? error.message : 'Errore durante la creazione dell\'invito',
       },
       { status: 500 }
     );

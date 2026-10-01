@@ -69,11 +69,15 @@ export async function POST(request: Request) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const confirmUrl = `${appUrl}/api/privacy/confirm/${reqRow.token}`;
 
-    await sendResendEmail({
+    const emailResult = await sendResendEmail({
       to: email,
       subject: 'Conferma opt-out privacy TaskWave',
       html: `<p>Clicca per confermare l'opt-out dal tracciamento IP e analytics:</p><p><a href="${confirmUrl}">Conferma opt-out</a></p><p>ID richiesta: ${reqRow.id}</p>`,
     });
+
+    if (!emailResult.ok) {
+      return NextResponse.json({ error: emailResult.error }, { status: 502 });
+    }
 
     return NextResponse.json({
       ok: true,

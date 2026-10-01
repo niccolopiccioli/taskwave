@@ -33,11 +33,6 @@ export async function POST(request: Request) {
         metadata: { supabase_user_id: user.id },
       });
       customerId = customer.id;
-
-      await supabase
-        .from('profiles')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', user.id);
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';

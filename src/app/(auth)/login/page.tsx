@@ -47,6 +47,8 @@ function LoginContent() {
 
       if (error) throw error;
 
+      await fetch('/api/auth/step-up/send', { method: 'PUT' });
+
       toast({
         title: 'Accesso effettuato',
         description: 'Reindirizzamento alla dashboard...',

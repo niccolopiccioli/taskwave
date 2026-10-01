@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -23,7 +22,6 @@ import {
 import type { Profile } from '@/lib/database.types';
 import { planLabel } from '@/lib/plans';
 import { cn } from '@/lib/utils';
-import { AccountSettingsSheet } from '@/components/settings/account-settings-sheet';
 
 interface ProfileMenuProps {
   profile: Profile | null;
@@ -32,7 +30,7 @@ interface ProfileMenuProps {
   onInvite: () => void;
   onLogout: () => void;
   onManageBilling: () => void;
-  onProfileUpdated?: (profile: Profile) => void;
+  onSettingsOpen?: () => void;
 }
 
 function MenuRow({
@@ -95,9 +93,8 @@ export function ProfileMenu({
   onInvite,
   onLogout,
   onManageBilling,
-  onProfileUpdated,
+  onSettingsOpen,
 }: ProfileMenuProps) {
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const initials = profile?.full_name?.charAt(0).toUpperCase() || 'U';
   const firstName = profile?.full_name?.split(' ')[0] || 'Utente';
   const isFree = profile?.plan === 'free';
@@ -105,16 +102,6 @@ export function ProfileMenu({
   return (
     <>
       <div className="flex items-center gap-1">
-        <button
-          type="button"
-          onClick={() => setSettingsOpen(true)}
-          className="group/settings relative flex h-8 w-8 items-center justify-center rounded-full outline-none transition-all hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-primary/50"
-          aria-label="Impostazioni"
-          title="Impostazioni"
-        >
-          <Settings className="h-4 w-4 text-muted-foreground transition-all group-hover/settings:text-primary group-hover/settings:rotate-90 duration-300" />
-        </button>
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -208,7 +195,7 @@ export function ProfileMenu({
                   icon={Settings}
                   label="Impostazioni"
                   description="Profilo, tema e notifiche"
-                  onClick={() => setSettingsOpen(true)}
+                  onClick={() => onSettingsOpen?.()}
                 />
                 <MenuRow
                   icon={LayoutDashboard}
@@ -249,13 +236,6 @@ export function ProfileMenu({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
-      <AccountSettingsSheet
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        profile={profile}
-        onProfileUpdated={onProfileUpdated}
-      />
     </>
   );
 }

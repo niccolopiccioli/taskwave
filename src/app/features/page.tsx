@@ -24,7 +24,7 @@ function BoardMock({ variant = 'default' }: { variant?: 'default' | 'realtime' |
       : ['Da fare', 'In progress', 'Fatto'];
 
   return (
-    <div className="p-6 sm:p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex gap-3 mb-4">
         {variant === 'realtime' && (
           <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
@@ -37,9 +37,9 @@ function BoardMock({ variant = 'default' }: { variant?: 'default' | 'realtime' |
           </span>
         )}
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
         {cols.map((col, ci) => (
-          <div key={col} className="flex-1 min-w-[100px]">
+          <div key={col} className="flex-1 min-w-[88px] sm:min-w-[100px]">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">{col}</p>
             <div className="space-y-2">
               {[0, 1].map((i) => (
@@ -88,15 +88,15 @@ export default function FeaturesPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mt-10 flex flex-wrap justify-center gap-4"
+          className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 w-full max-w-sm sm:max-w-none mx-auto"
         >
           <Link href="/register">
-            <Button size="lg" className="rounded-full bg-teal-500 hover:bg-teal-400 text-zinc-950 font-semibold px-8">
+            <Button size="lg" className="w-full sm:w-auto rounded-full bg-teal-500 hover:bg-teal-400 text-zinc-950 font-semibold px-8">
               Prova gratis
             </Button>
           </Link>
           <Link href="/pricing">
-            <Button size="lg" variant="outline" className="rounded-full border-white/15 px-8">
+            <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-full border-white/15 px-8">
               Confronta i piani
             </Button>
           </Link>
@@ -157,7 +157,7 @@ export default function FeaturesPage() {
         visual={<BoardMock variant="privacy" />}
       />
 
-      <section className="py-24 sm:py-32 border-t border-white/[0.06]">
+      <section className="py-16 sm:py-24 lg:py-32 border-t border-white/[0.06]">
         <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
           <ScrollReveal className="text-center mb-16">
             <p className="text-xs uppercase tracking-[0.2em] text-teal-400 mb-4">E molto altro</p>
@@ -188,7 +188,7 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      <section className="py-32 border-t border-white/[0.06] relative overflow-hidden">
+      <section className="py-20 sm:py-32 border-t border-white/[0.06] relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-teal-500/10 via-transparent to-transparent pointer-events-none" />
         <ScrollReveal className="container mx-auto px-4 text-center max-w-2xl relative">
           <h2 className="text-3xl sm:text-4xl font-display font-bold mb-6">

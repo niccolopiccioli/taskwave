@@ -54,27 +54,32 @@ export function CommandPalette({ onInvite, onManageBilling }: CommandPaletteProp
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="p-0 gap-0 max-w-lg overflow-hidden">
+      <DialogContent className="p-0 gap-0 max-w-lg overflow-hidden rounded-2xl shadow-2xl">
         <DialogHeader className="px-4 pt-4 pb-2">
           <DialogTitle className="sr-only">Command palette</DialogTitle>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Cerca azioni... (⌘K)"
+              placeholder="Cosa vuoi fare?"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="pl-9 border-0 focus-visible:ring-0 shadow-none"
+              className="pl-9 h-11 text-[15px] rounded-xl border-0 focus-visible:ring-0 shadow-none bg-muted/60"
               autoFocus
             />
           </div>
         </DialogHeader>
         <div className="max-h-72 overflow-y-auto py-2">
+          {filtered.length > 0 && (
+            <p className="px-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Vai a
+            </p>
+          )}
           {filtered.map((action) => (
             <button
               key={action.id}
               type="button"
               className={cn(
-                'flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-muted/60 transition-colors'
+                'flex w-full items-center gap-3 px-4 py-2.5 text-sm rounded-lg mx-2 w-[calc(100%-1rem)] hover:bg-muted transition-colors'
               )}
               onClick={() => run(() => router.push(action.href))}
             >
@@ -82,10 +87,15 @@ export function CommandPalette({ onInvite, onManageBilling }: CommandPaletteProp
               {action.label}
             </button>
           ))}
+          {(onInvite || onManageBilling) && (
+            <p className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Azioni
+            </p>
+          )}
           {onInvite && (
             <button
               type="button"
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-muted/60"
+              className="flex mx-2 w-[calc(100%-1rem)] items-center gap-3 px-4 py-2.5 text-sm rounded-lg hover:bg-muted"
               onClick={() => run(onInvite)}
             >
               <Plus className="h-4 w-4 text-primary" />
@@ -95,7 +105,7 @@ export function CommandPalette({ onInvite, onManageBilling }: CommandPaletteProp
           {onManageBilling && (
             <button
               type="button"
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-muted/60"
+              className="flex mx-2 w-[calc(100%-1rem)] items-center gap-3 px-4 py-2.5 text-sm rounded-lg hover:bg-muted"
               onClick={() => run(onManageBilling)}
             >
               <CreditCard className="h-4 w-4 text-primary" />
@@ -103,8 +113,8 @@ export function CommandPalette({ onInvite, onManageBilling }: CommandPaletteProp
             </button>
           )}
         </div>
-        <p className="text-[10px] text-muted-foreground text-center pb-3">
-          Premi Esc per chiudere
+        <p className="text-[11px] text-muted-foreground text-center py-3 border-t border-border/50">
+          ↑↓ naviga · ⏎ apri · esc chiudi
         </p>
       </DialogContent>
     </Dialog>

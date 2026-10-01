@@ -37,17 +37,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Messaggio troppo lungo.' }, { status: 400 });
     }
 
-    await sendResendEmail({
+    const inbox = await sendResendEmail({
       to: CONTACT_EMAIL,
       subject: `[TaskWave] ${subject}`,
       html: contactFormEmailHtml({ name, email, subject, message }),
     });
 
+    if (!inbox.ok) {
+      return NextResponse.json({ error: inbox.error }, { status: 502 });
+    }
+
     await sendResendEmail({
       to: email,
       subject: 'Abbiamo ricevuto il tuo messaggio — TaskWave',
       html: `<p>Ciao ${name},</p><p>Grazie per averci scritto. Il team TaskWave risponderà entro 24–48 ore lavorative.</p><p style="color:#71717a;font-size:13px;">TaskWave</p>`,
-    }).catch(() => undefined);
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

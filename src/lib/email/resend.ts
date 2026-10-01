@@ -1,4 +1,8 @@
-const FROM = 'TaskWave <onboarding@resend.dev>';
+const DEFAULT_FROM = 'TaskWave <onboarding@resend.dev>';
+
+function getFromAddress() {
+  return process.env.RESEND_FROM || DEFAULT_FROM;
+}
 
 interface SendEmailParams {
   to: string;
@@ -6,29 +10,40 @@ interface SendEmailParams {
   html: string;
 }
 
-export async function sendResendEmail({ to, subject, html }: SendEmailParams) {
+export type SendEmailResult =
+  | { ok: true; id?: string }
+  | { ok: false; error: string };
+
+export async function sendResendEmail({ to, subject, html }: SendEmailParams): Promise<SendEmailResult> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    throw new Error('RESEND_API_KEY non configurata');
+    return { ok: false, error: 'RESEND_API_KEY non configurata' };
   }
 
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ from: FROM, to, subject, html }),
-  });
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ from: getFromAddress(), to, subject, html }),
+    });
 
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const message =
-      typeof data.message === 'string' ? data.message : 'Invio email fallito';
-    throw new Error(message);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message =
+        typeof data.message === 'string' ? data.message : 'Invio email fallito';
+      return { ok: false, error: message };
+    }
+
+    return { ok: true, id: typeof data.id === 'string' ? data.id : undefined };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Invio email fallito',
+    };
   }
-
-  return data;
 }
 
 export function workspaceInviteEmailHtml(opts: {
@@ -49,6 +64,21 @@ export function workspaceInviteEmailHtml(opts: {
 Accetta invito
 </a></td></tr>
 <tr><td style="color:#71717a;font-size:12px;padding-top:24px;text-align:center;">TaskWave — Kanban per team</td></tr>
+</table></td></tr></table></body></html>`;
+}
+
+export function stepUpOtpEmailHtml(opts: { code: string; expiresMinutes: number }) {
+  const { code, expiresMinutes } = opts;
+  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#09090b;padding:40px 20px;">
+<tr><td align="center">
+<table width="100%" style="max-width:480px;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:32px;">
+<tr><td style="color:#fafafa;font-size:20px;font-weight:600;padding-bottom:12px;">Codice di verifica TaskWave</td></tr>
+<tr><td style="color:#a1a1aa;font-size:15px;line-height:1.6;padding-bottom:24px;">Per continuare ad usare TaskWave, inserisci questo codice. Scade tra ${expiresMinutes} minuti.</td></tr>
+<tr><td align="center" style="padding:16px 0;">
+<span style="display:inline-block;font-size:32px;font-weight:700;letter-spacing:8px;color:#2dd4bf;font-family:Courier New,monospace;background:#27272a;padding:16px 28px;border-radius:10px;">${code}</span>
+</td></tr>
+<tr><td style="color:#71717a;font-size:12px;padding-top:16px;text-align:center;">Non condividerlo con nessuno. Se non hai richiesto tu questo codice, ignora l'email.</td></tr>
 </table></td></tr></table></body></html>`;
 }
 

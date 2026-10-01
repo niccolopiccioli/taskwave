@@ -17,7 +17,7 @@ export async function GET(
 
     const { data, error } = await supabase
       .from('workspace_invitations')
-      .select('id, email, status, created_at, expires_at, invited_by')
+      .select('id, email, status, created_at, expires_at, invited_by, token')
       .eq('workspace_id', params.id)
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
@@ -26,7 +26,13 @@ export async function GET(
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json({ invitations: data ?? [] });
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const invitations = (data ?? []).map((inv) => ({
+      ...inv,
+      invite_url: `${appUrl}/invite/${inv.token}`,
+    }));
+
+    return NextResponse.json({ invitations });
   } catch (error) {
     console.error('List invitations error:', error);
     return NextResponse.json(

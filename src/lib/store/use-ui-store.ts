@@ -38,7 +38,7 @@ export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
       sidebarOpen: true,
-      theme: 'dark',
+      theme: 'system',
       accent: 'teal',
       compactMode: false,
       reduceMotion: false,

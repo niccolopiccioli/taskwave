@@ -15,6 +15,7 @@ import {
   Trash2,
   Loader2,
   Clock,
+  Link2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -130,7 +131,7 @@ export function WorkspaceTeamPanel({
     Array<{ id: string; name: string; key_prefix: string; created_at: string }>
   >([]);
   const [pendingInvites, setPendingInvites] = useState<
-    Array<{ id: string; email: string; created_at: string; expires_at: string }>
+    Array<{ id: string; email: string; created_at: string; expires_at: string; token?: string; invite_url?: string }>
   >([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -154,6 +155,15 @@ export function WorkspaceTeamPanel({
       setPendingInvites(await listWorkspaceInvitations(workspace.id));
     } catch {
       setPendingInvites([]);
+    }
+  };
+
+  const copyInviteLink = async (inviteUrl: string) => {
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setError(null);
+    } catch {
+      setError('Impossibile copiare il link. Condividilo manualmente.');
     }
   };
 
@@ -293,6 +303,9 @@ export function WorkspaceTeamPanel({
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Inviti in attesa di conferma
                 </p>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Utenti già registrati vedono l&apos;invito in dashboard. Per gli altri, usa Copia link.
+                </p>
                 {pendingInvites.map((invite) => (
                   <div
                     key={invite.id}
@@ -307,19 +320,32 @@ export function WorkspaceTeamPanel({
                         <p className="text-xs text-muted-foreground">In attesa di accettazione</p>
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-muted-foreground hover:text-red-400"
-                      disabled={actionLoading === `cancel-${invite.id}`}
-                      onClick={() => handleCancelInvite(invite.id)}
-                    >
+                    <div className="flex items-center gap-2 shrink-0">
+                      {invite.invite_url && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8"
+                          onClick={() => copyInviteLink(invite.invite_url!)}
+                        >
+                          <Link2 className="w-3.5 h-3.5 mr-1" />
+                          Copia link
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-muted-foreground hover:text-red-400"
+                        disabled={actionLoading === `cancel-${invite.id}`}
+                        onClick={() => handleCancelInvite(invite.id)}
+                      >
                       {actionLoading === `cancel-${invite.id}` ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         'Annulla'
                       )}
                     </Button>
+                    </div>
                   </div>
                 ))}
               </div>

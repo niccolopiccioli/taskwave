@@ -47,7 +47,8 @@ async function maybeSendEmail(
     .single();
   if (!profile?.email) return;
   try {
-    await sendResendEmail({ to: profile.email, subject, html });
+    const result = await sendResendEmail({ to: profile.email, subject, html });
+    if (!result.ok) return;
   } catch {
     // non-blocking
   }

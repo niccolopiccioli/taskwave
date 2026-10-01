@@ -20,14 +20,34 @@ interface ContactSheetProps {
   triggerClassName?: string;
   triggerLabel?: string;
   onNavigate?: () => void;
+  /** Controlled open state — use with showTrigger={false} when opened from a parent menu */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Show the built-in trigger button (default: true) */
+  showTrigger?: boolean;
 }
 
-export function ContactSheet({ triggerClassName, triggerLabel = 'Contattaci', onNavigate }: ContactSheetProps) {
-  const [open, setOpen] = useState(false);
+export function ContactSheet({
+  triggerClassName,
+  triggerLabel = 'Contattaci',
+  onNavigate,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  showTrigger = true,
+}: ContactSheetProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+
+  const setOpen = (next: boolean) => {
+    if (isControlled) controlledOnOpenChange?.(next);
+    else setInternalOpen(next);
+  };
 
   const reset = () => {
     setForm({ name: '', email: '', subject: '', message: '' });
@@ -60,25 +80,29 @@ export function ContactSheet({ triggerClassName, triggerLabel = 'Contattaci', on
       open={open}
       onOpenChange={(v) => {
         setOpen(v);
-        if (!v) reset();
-        onNavigate?.();
+        if (!v) {
+          reset();
+          onNavigate?.();
+        }
       }}
     >
-      <SheetTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            'rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-200',
-            'text-muted-foreground hover:text-foreground hover:bg-white/[0.05]',
-            triggerClassName
-          )}
-        >
-          {triggerLabel}
-        </button>
-      </SheetTrigger>
+      {showTrigger && (
+        <SheetTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              'rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-200',
+              'text-muted-foreground hover:text-foreground hover:bg-white/[0.05]',
+              triggerClassName
+            )}
+          >
+            {triggerLabel}
+          </button>
+        </SheetTrigger>
+      )}
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md border-white/[0.08] bg-zinc-950/98 backdrop-blur-2xl overflow-y-auto"
+        className="w-full sm:max-w-md border-border bg-background backdrop-blur-2xl overflow-y-auto"
       >
         <SheetHeader className="text-left pb-2">
           <SheetTitle className="flex items-center gap-2 text-xl font-display">

@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 if [[ -f "$ROOT_DIR/.env.local" ]]; then set -a; source "$ROOT_DIR/.env.local"; set +a; fi
 : "${RESEND_API_KEY:?RESEND_API_KEY required}"
 
-FROM="TaskWave <onboarding@resend.dev>"
+FROM="${RESEND_FROM:-TaskWave <hello@send.taskwave.app>}"
 APP_URL="${NEXT_PUBLIC_APP_URL:-https://taskwave-rust.vercel.app}"
 AUTH="Authorization: Bearer ${RESEND_API_KEY}"
 

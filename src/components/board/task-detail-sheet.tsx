@@ -52,6 +52,8 @@ interface TaskDetailSheetProps {
   workspaceMembers?: Profile[];
   onUpdated: () => void;
   onDeleted?: () => void;
+  onMoveToNext?: () => void | Promise<void>;
+  moveToNextLabel?: string | null;
 }
 
 const priorityLabels: Record<TaskPriority, string> = {
@@ -69,6 +71,8 @@ export function TaskDetailSheet({
   workspaceMembers = [],
   onUpdated,
   onDeleted,
+  onMoveToNext,
+  moveToNextLabel,
 }: TaskDetailSheetProps) {
   const supabase = createClient();
   const { toast } = useToast();
@@ -282,17 +286,25 @@ export function TaskDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto border-border/60">
+      <SheetContent className="w-full sm:max-w-[420px] overflow-y-auto border-border/60 rounded-l-2xl">
         <SheetHeader>
-          <SheetTitle>Dettaglio task</SheetTitle>
+          <SheetTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-left">
+            Dettaglio lavoro
+          </SheetTitle>
         </SheetHeader>
 
-        <div className="space-y-5 mt-6">
+        <div className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="task-title-edit">Titolo</Label>
-            <Input id="task-title-edit" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input
+              id="task-title-edit"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-base font-semibold rounded-xl border-transparent bg-transparent px-2 -mx-2 hover:border-border hover:bg-card focus:border-primary focus:bg-card transition-colors"
+              aria-label="Titolo"
+            />
           </div>
 
+          <div className="rounded-xl border border-border/60 bg-card p-3.5 space-y-4">
           {workspaceMembers.length > 0 && (
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5">
@@ -339,6 +351,7 @@ export function TaskDetailSheet({
                   key={p}
                   type="button"
                   size="sm"
+                  className="rounded-full"
                   variant={priority === p ? 'default' : 'outline'}
                   onClick={() => setPriority(p)}
                 >
@@ -346,6 +359,7 @@ export function TaskDetailSheet({
                 </Button>
               ))}
             </div>
+          </div>
           </div>
 
           <PlanGate feature="taskComments" plan={plan}>
@@ -361,24 +375,40 @@ export function TaskDetailSheet({
             </div>
           </PlanGate>
 
-          <div className="flex gap-2">
-            <Button onClick={handleSave} disabled={saving} className="flex-1">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Salva modifiche'}
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-              onClick={handleDelete}
-              disabled={saving}
-              aria-label="Elimina task"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          <div className="sticky bottom-0 -mx-6 -mb-6 mt-2 border-t border-border/60 bg-background/95 backdrop-blur px-6 py-4 space-y-2.5">
+            {moveToNextLabel && onMoveToNext && (
+              <Button
+                onClick={() => void onMoveToNext()}
+                disabled={saving}
+                className="w-full rounded-xl h-11 text-sm font-semibold"
+              >
+                Sposta in {moveToNextLabel} →
+              </Button>
+            )}
+            <div className="flex gap-2">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                variant={moveToNextLabel ? 'outline' : 'default'}
+                className="flex-1 rounded-xl"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Salva modifiche'}
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                onClick={handleDelete}
+                disabled={saving}
+                aria-label="Elimina task"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
           <PlanGate feature="taskComments" plan={plan}>
-            <div className="space-y-3 pt-2 border-t border-border/60">
+            <div className="space-y-3 rounded-xl border border-border/60 bg-card p-3.5">
               <Label className="flex items-center gap-1.5">
                 <MessageSquare className="h-3.5 w-3.5" /> Commenti
               </Label>
@@ -410,7 +440,7 @@ export function TaskDetailSheet({
           </PlanGate>
 
           <PlanGate feature="taskAttachments" plan={plan}>
-            <div className="space-y-3 pt-2 border-t border-border/60">
+            <div className="space-y-3 rounded-xl border border-border/60 bg-card p-3.5">
               <Label className="flex items-center gap-1.5">
                 <Paperclip className="h-3.5 w-3.5" /> Allegati
               </Label>
@@ -457,7 +487,7 @@ export function TaskDetailSheet({
 
           <PlanGate feature="auditLog" plan={plan}>
             {customFields.length > 0 && (
-              <div className="space-y-3 pt-2 border-t border-border/60">
+              <div className="space-y-3 rounded-xl border border-border/60 bg-card p-3.5">
                 <Label>Campi personalizzati</Label>
                 {customFields.map((field) => (
                   <div key={field.id} className="space-y-1.5">
